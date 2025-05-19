@@ -2,10 +2,31 @@ import PasswordResetRepository from '@/repositories/PasswordResetRepo';
 import RefreshTokenRepository from '@/repositories/RefreshTokenRepo';
 import UserRepository from '@/repositories/UserRepo';
 import VerificationCodeRepository from '@/repositories/VerificationCodeRepo';
+import AuthService from '@/services/AuthService';
 import EmailService from '@/services/EmailService';
 import PasswordService from '@/services/PasswordService';
 import TokenService from '@/services/TokenService';
 import UserService from '@/services/UserService';
+
+export const mockAuthService: jest.Mocked<
+  Omit<
+    AuthService,
+    | 'tokenService'
+    | 'refTokenRepo'
+    | 'pwdResetRepo'
+    | 'userService'
+    | 'verificationCodeRepo'
+  >
+> = {
+  clearAuthSession: jest.fn(),
+  generateAuthToken: jest.fn(),
+  generateLinkToken: jest.fn(),
+  getPasswordResetData: jest.fn(),
+  getRefreshToken: jest.fn(),
+  regenerateVerificationCode: jest.fn(),
+  resetUserPassword: jest.fn(),
+  verifyVerificationCode: jest.fn(),
+};
 
 export const mockEmailService: jest.Mocked<Omit<EmailService, 'init'>> = {
   send: jest.fn(),

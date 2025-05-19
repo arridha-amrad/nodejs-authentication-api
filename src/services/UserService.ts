@@ -11,7 +11,7 @@ export type TCreateUser = Pick<
 >;
 
 type TGetOneUserFilter = Partial<
-  Pick<TUser, 'email' | 'username'> & { _id: string }
+  Pick<TUser, 'email' | 'username' | 'jwtVersion'> & { _id: string }
 >;
 
 export default class UserService {
@@ -31,6 +31,9 @@ export default class UserService {
     }
     if (filter.username) {
       appliedFilter['username'] = filter.username;
+    }
+    if (filter.jwtVersion) {
+      appliedFilter['jwtVersion'] = filter.jwtVersion;
     }
     return this.userRepo.findOne(appliedFilter);
   }

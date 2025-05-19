@@ -1,13 +1,5 @@
 import emailVerification from '@/controllers/auth/emailVerification';
 import forgotPassword from '@/controllers/auth/forgotPassword';
-// import {
-//   githubOauthCallback,
-//   loginWithGithub,
-// } from '@/controllers/auth/githubOauth2';
-// import {
-//   googleOAuth2Callback,
-//   loginWithGoogle,
-// } from '@/controllers/auth/googleOauth2';
 import login from '@/controllers/auth/login';
 import logout from '@/controllers/auth/logout';
 import getAuthUser from '@/controllers/auth/getAuthUser';

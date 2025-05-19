@@ -1,4 +1,4 @@
-import { validate } from '../emailVerification';
+import { validate } from '../validator/emailVerification';
 
 describe('validate email verification input', () => {
   it("should return validation errors 'Invalid code'", () => {

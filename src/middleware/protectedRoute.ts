@@ -1,5 +1,5 @@
 import TokenService, { TokenPayload } from '@/services/TokenService';
-import UserService from '@/repositories/UserRepo';
+import UserService from '@/services/UserService';
 import { NextFunction, Request, Response } from 'express';
 
 export const protectedRoute = async (
@@ -31,7 +31,7 @@ export const protectedRoute = async (
       return;
     }
 
-    const account = await userService.findOne({ jwtVersion, _id: id });
+    const account = await userService.getOneUser({ jwtVersion, _id: id });
     if (!account) {
       res.status(401).json({ message: 'User not found' });
       return;

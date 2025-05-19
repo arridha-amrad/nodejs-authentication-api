@@ -1,4 +1,4 @@
-import { validate } from '../login';
+import { validate } from '../validator/login';
 
 describe('validate login input', () => {
   it('should be valid inputs', () => {

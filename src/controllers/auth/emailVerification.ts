@@ -13,6 +13,8 @@ export default async function emailVerificationHandler(
     const userService = new UserService();
     const authService = new AuthService();
 
+    console.log('reach here..');
+
     const { code, userId } = req.body;
     const { ip, userAgent } = getUserAgentAndIp(req);
 

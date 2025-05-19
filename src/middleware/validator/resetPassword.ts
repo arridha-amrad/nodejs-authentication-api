@@ -1,3 +1,4 @@
+import { formatZodErrors } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 
@@ -22,30 +23,24 @@ export const schema = z
 
 export type ResetPasswordInput = z.infer<typeof schema>;
 
+export const validate = (data: unknown) => {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    return { valid: false, errors: formatZodErrors(result.error) };
+  }
+  return { valid: true, data: result.data };
+};
+
 export const validateResetPasswordInput = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const { password, confirmPassword } = req.body;
-
-  const result = schema.safeParse({ password, confirmPassword });
-
-  if (!result.success) {
-    const formatted = result.error.format();
-    const errors: Partial<Record<keyof ResetPasswordInput, string>> = {};
-    for (const key of Object.keys(formatted) as (keyof typeof formatted)[]) {
-      if (key !== '_errors' && formatted[key]?._errors?.length) {
-        errors[key] = formatted[key]!._errors[0];
-      }
-    }
-    res.status(400).json({ errors });
+  const validation = validate(req.body);
+  if (!validation.valid) {
+    res.status(400).json({ errors: validation.errors });
     return;
-  } else {
-    const { password } = result.data;
-    req.body = {
-      password,
-    };
-    next();
   }
+  req.body = validation.data;
+  next();
 };
