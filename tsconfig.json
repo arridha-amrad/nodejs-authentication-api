@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true, // Enable all strict type-checking options
+    "skipLibCheck": true, // Skip checking .d.ts files for speed
+    "resolveJsonModule": true, // Allow importing JSON
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"]
+    },
+    "outDir": "dist",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "types": ["jest", "node"]
+  },
+  "include": ["src"], // Include your source files
+  "exclude": ["node_modules", "dist"] // Exclude build artifacts and dependencies
+}
