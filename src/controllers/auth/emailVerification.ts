@@ -13,8 +13,6 @@ export default async function emailVerificationHandler(
     const userService = new UserService();
     const authService = new AuthService();
 
-    console.log('reach here..');
-
     const { code, userId } = req.body;
     const { ip, userAgent } = getUserAgentAndIp(req);
 
@@ -38,15 +36,9 @@ export default async function emailVerificationHandler(
         userAgent,
       });
 
-    console.log('after generate auth token');
-
     res.clearCookie(COOKIE_SIGNUP, COOKIE_OPTIONS);
 
-    console.log('after clearCookie');
-
     res.cookie(COOKIE_REF_TOKEN, rawRefreshToken, COOKIE_OPTIONS);
-
-    console.log('after set cookie ref token');
 
     res.status(200).json({
       user: account,

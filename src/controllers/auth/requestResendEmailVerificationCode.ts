@@ -16,7 +16,7 @@ export default async function requestResendEmailVerificationCode(
 
     const { value } = getCookie(req, 'signup');
     if (!value) {
-      res.status(404).json({ message: 'Sign up cookie is missing' });
+      res.status(400).json({ message: 'Sign up cookie is missing' });
       return;
     }
 
@@ -26,7 +26,7 @@ export default async function requestResendEmailVerificationCode(
       return;
     }
     if (account.isVerified) {
-      res.status(404).json({ message: 'User has been verified' });
+      res.status(403).json({ message: 'User has been verified' });
       return;
     }
 

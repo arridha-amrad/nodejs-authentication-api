@@ -11,8 +11,6 @@ export default async function signupHandler(
 ) {
   const { email, password, username } = req.body as SignupInput;
 
-  console.log('signup controller...');
-
   try {
     const userService = new UserService();
     const emailService = new EmailService();

@@ -13,6 +13,20 @@ jest.mock('@/services/UserService', () => ({
 }));
 
 describe('signup endpoint', () => {
+  describe('Error handler middleware', () => {
+    it('should catch errors passed to next(err)', async () => {
+      mockUserService.checkEmailAndUsernameUniqueness.mockRejectedValue(
+        new Error('failure when check email and username uniqueness'),
+      );
+      const response = await request(app).post('/api/v1/auth/signup').send({
+        email: 'valid@mail.com',
+        password: 'validPwd12!',
+        username: 'valid_username',
+      });
+      expect(response.status).toBe(500);
+    });
+  });
+
   describe('POST /api/v1/auth/signup', () => {
     it('should give response of email validation errors', async () => {
       const response = await request(app).post('/api/v1/auth/signup').send({

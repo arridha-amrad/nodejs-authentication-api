@@ -46,7 +46,7 @@ export const getUserAgentAndIp = (req: Request) => {
       ? forwarded[0].trim()
       : req.socket.remoteAddress;
 
-  const ip = req.ip ?? ipForwarded;
+  const ip = req.ip || ipForwarded;
 
   const userAgent = req.headers['user-agent'];
 

@@ -17,7 +17,7 @@ export default async function refreshTokenHandler(
 
     const { name, value } = getCookie(req, 'refresh-token');
     if (!value || !name) {
-      res.status(404).json({ message: 'Token is missing' });
+      res.status(401).json({ message: 'Token is missing' });
       return;
     }
 
@@ -46,7 +46,7 @@ export default async function refreshTokenHandler(
 
     res.cookie(name, rawRefreshToken, COOKIE_OPTIONS);
 
-    res.status(200).send({ accessToken });
+    res.status(200).json({ accessToken });
     return;
   } catch (err) {
     next(err);

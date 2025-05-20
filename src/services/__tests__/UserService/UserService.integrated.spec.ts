@@ -1,7 +1,6 @@
 import { JWT_VERSION_LENGTH } from '@/constants';
 import { TUser as User, UserSchema as userSchema } from '@/models/UserModel';
 import { generateRandomBytes } from '@/utils';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose, { Model, model } from 'mongoose';
 import UserService, { TCreateUser } from '../../UserService';
 
@@ -9,7 +8,6 @@ let UserModel: Model<User>;
 let userService: UserService;
 
 describe('testing for UserService', () => {
-  let mongoServer: MongoMemoryServer;
   let dummyId: string;
   let dummy: User;
 

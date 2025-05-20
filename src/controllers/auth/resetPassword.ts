@@ -15,7 +15,7 @@ export default async function resetPasswordHandler(
 
     const token = req.params.token;
     if (!token) {
-      res.status(404).json({ message: 'Token is missing' });
+      res.status(403).json({ message: 'Token is missing' });
       return;
     }
 

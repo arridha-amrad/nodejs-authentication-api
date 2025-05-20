@@ -57,8 +57,6 @@ export default async function login(
 
     return;
   } catch (err) {
-    console.log('ERR : ', err);
-
     next(err);
   }
 }
