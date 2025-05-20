@@ -30,13 +30,13 @@ export default async function login(
     }
 
     if (!account.isVerified) {
-      res.status(404).json({ message: 'Account is not verified' });
+      res.status(403).json({ message: 'Account is not verified' });
       return;
     }
 
     const isPasswordMatch = await pwdService.verify(account.password, password);
     if (!isPasswordMatch) {
-      res.status(400).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'Invalid credentials' });
       return;
     }
 
@@ -52,17 +52,13 @@ export default async function login(
 
     res.status(200).json({
       accessToken,
-      user: {
-        id: account.id,
-        username: account.username,
-        email: account.email,
-        createdAt: account.createdAt,
-        updatedAt: account.updatedAt,
-      },
+      user: userService.setUserResponse(account),
     });
 
     return;
   } catch (err) {
+    console.log('ERR : ', err);
+
     next(err);
   }
 }

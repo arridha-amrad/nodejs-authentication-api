@@ -38,9 +38,15 @@ export default async function emailVerificationHandler(
         userAgent,
       });
 
+    console.log('after generate auth token');
+
     res.clearCookie(COOKIE_SIGNUP, COOKIE_OPTIONS);
 
+    console.log('after clearCookie');
+
     res.cookie(COOKIE_REF_TOKEN, rawRefreshToken, COOKIE_OPTIONS);
+
+    console.log('after set cookie ref token');
 
     res.status(200).json({
       user: account,

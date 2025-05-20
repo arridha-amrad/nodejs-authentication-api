@@ -94,4 +94,10 @@ export default class UserService {
     });
     return user;
   }
+
+  async setUserResponse(user: TUser) {
+    // eslint-disable-next-line
+    const { isVerified, isActive, jwtVersion, password, ...props } = user;
+    return props;
+  }
 }

@@ -1,186 +1,136 @@
 import { mockAuthService, mockUserService } from '@/__mocks__/services.mock';
-import * as utils from '@/utils';
+import { COOKIE_OPTIONS, COOKIE_REF_TOKEN, COOKIE_SIGNUP } from '@/constants';
 import { NextFunction, Request, Response } from 'express';
 import emailVerificationHandler from '../emailVerification';
 
-jest.mock('@/utils', () => ({
-  getUserAgentAndIp: jest.fn(),
-}));
-
-const mockGetUserAgentAndIp = utils.getUserAgentAndIp as jest.Mock;
-
-// Mock the dependencies
 jest.mock('@/services/AuthService', () => ({
-  _esModule: true,
+  __esModule: true,
   default: jest.fn(() => mockAuthService),
 }));
-
 jest.mock('@/services/UserService', () => ({
-  _esModule: true,
+  __esModule: true,
   default: jest.fn(() => mockUserService),
 }));
+jest.mock('@/utils', () => ({
+  getUserAgentAndIp: jest.fn(() => ({
+    ip: '127.0.0.1',
+    userAgent: 'jest-test',
+  })),
+}));
 
-describe('emailVerificationHandler', () => {
+describe('Email verification controller', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: jest.MockedFunction<NextFunction>;
 
   beforeEach(() => {
-    // Initialize fresh mocks for each test
+    mockNext = jest.fn();
     mockRequest = {
       body: {
-        code: '123456',
+        code: '123456', // Add required fields
         userId: 'user123',
       },
       headers: {
-        'user-agent': 'test-agent',
-        'x-forwarded-for': '127.0.0.1',
+        authorization: '',
+        'user-agent': 'jest-test',
       },
-    };
-
-    mockGetUserAgentAndIp.mockResolvedValue({
+      // Add IP and user-agent to test getUserAgentAndIp
       ip: '127.0.0.1',
-      userAgent: 'test-agent',
-    });
-
+    };
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
       clearCookie: jest.fn(),
       cookie: jest.fn(),
     };
-
-    mockNext = jest.fn();
-
-    // Clear all mocks between tests
     jest.clearAllMocks();
   });
 
   it('should return 404 for invalid verification code', async () => {
-    // mockAuthService.verifyVerificationCode.mockResolvedValue(true as any);
+    mockAuthService.verifyVerificationCode.mockResolvedValue(null);
     await emailVerificationHandler(
       mockRequest as any,
       mockResponse as any,
       mockNext,
     );
-    expect(true).toBe(true);
-    // expect(mockGetUserAgentAndIp).toHaveBeenCalled();
+    expect(mockAuthService.verifyVerificationCode).toHaveBeenCalledTimes(1);
+    expect(mockAuthService.verifyVerificationCode).toHaveBeenCalledWith(
+      'user123',
+      '123456',
+    );
+    expect(mockResponse.status).toHaveBeenCalledWith(404);
+    expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Invalid code' });
   });
 
-  // it('should return 404 if user not found', async () => {
-  //   mockAuthService.verifyVerificationCode.mockResolvedValue({} as any);
-  //   mockUserService.verifyNewUser.mockResolvedValue(null);
+  it('should return 404 for not account related to user', async () => {
+    mockAuthService.verifyVerificationCode.mockResolvedValue(true as any);
+    mockUserService.verifyNewUser.mockResolvedValue(null);
+    await emailVerificationHandler(
+      mockRequest as any,
+      mockResponse as any,
+      mockNext,
+    );
+    expect(mockAuthService.verifyVerificationCode).toHaveBeenCalledTimes(1);
+    expect(mockAuthService.verifyVerificationCode).toHaveBeenCalledWith(
+      'user123',
+      '123456',
+    );
+    expect(mockResponse.status).toHaveBeenCalledWith(404);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      message: 'User not found',
+    });
+  });
 
-  //   await emailVerificationHandler(
-  //     mockRequest as Request,
-  //     mockResponse as Response,
-  //     mockNext,
-  //   );
+  it('should return 500 when generateAuthToken throws error', async () => {
+    mockAuthService.verifyVerificationCode.mockResolvedValue(true as any);
+    mockUserService.verifyNewUser.mockResolvedValue(true as any);
+    mockAuthService.generateAuthToken.mockRejectedValue(new Error('Error'));
+    await emailVerificationHandler(
+      mockRequest as any,
+      mockResponse as any,
+      mockNext,
+    );
+    expect(mockAuthService.verifyVerificationCode).toHaveBeenCalledTimes(1);
+    expect(mockAuthService.verifyVerificationCode).toHaveBeenCalledWith(
+      'user123',
+      '123456',
+    );
+    expect(mockNext).toHaveBeenCalledTimes(1);
+    expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+  });
 
-  //   expect(mockUserService.verifyNewUser).toHaveBeenCalledWith('user123');
-  //   expect(mockResponse.status).toHaveBeenCalledWith(404);
-  //   expect(mockResponse.json).toHaveBeenCalledWith({
-  //     message: 'User not found',
-  //   });
-  //   expect(mockNext).not.toHaveBeenCalled();
-  // });
-
-  // it('should handle successful verification with tokens and cookies', async () => {
-  //   const mockAccount = {
-  //     _id: 'user123',
-  //     email: 'test@example.com',
-  //     jwtVersion: 1,
-  //   };
-  //   const mockTokens = {
-  //     accessToken: 'access-token-123',
-  //     rawRefreshToken: 'refresh-token-123',
-  //   };
-
-  //   mockAuthService.verifyVerificationCode.mockResolvedValue({} as any);
-  //   mockUserService.verifyNewUser.mockResolvedValue(mockAccount);
-  //   mockAuthService.generateAuthToken.mockResolvedValue(mockTokens);
-
-  //   await emailVerificationHandler(
-  //     mockRequest as Request,
-  //     mockResponse as Response,
-  //     mockNext,
-  //   );
-
-  //   // Verify verification code check
-  //   expect(mockAuthService.verifyVerificationCode).toHaveBeenCalledWith(
-  //     'user123',
-  //     '123456',
-  //   );
-
-  //   // Verify user verification
-  //   expect(mockUserService.verifyNewUser).toHaveBeenCalledWith('user123');
-
-  //   // Verify token generation
-  //   expect(mockAuthService.generateAuthToken).toHaveBeenCalledWith({
-  //     jwtVersion: 1,
-  //     userId: 'user123',
-  //     ip: '127.0.0.1',
-  //     userAgent: 'test-agent',
-  //   });
-
-  //   // Verify cookie handling
-  //   expect(mockResponse.clearCookie).toHaveBeenCalledWith(
-  //     COOKIE_SIGNUP,
-  //     COOKIE_OPTIONS,
-  //   );
-  //   expect(mockResponse.cookie).toHaveBeenCalledWith(
-  //     COOKIE_REF_TOKEN,
-  //     'refresh-token-123',
-  //     COOKIE_OPTIONS,
-  //   );
-
-  //   // Verify success response
-  //   expect(mockResponse.status).toHaveBeenCalledWith(200);
-  //   expect(mockResponse.json).toHaveBeenCalledWith({
-  //     user: mockAccount,
-  //     accessToken: 'access-token-123',
-  //   });
-
-  //   expect(mockNext).not.toHaveBeenCalled();
-  // });
-
-  // it('should pass errors to next middleware', async () => {
-  //   const testError = new Error('Test error');
-  //   mockAuthService.verifyVerificationCode.mockRejectedValue(testError);
-
-  //   await emailVerificationHandler(
-  //     mockRequest as Request,
-  //     mockResponse as Response,
-  //     mockNext,
-  //   );
-
-  //   expect(mockNext).toHaveBeenCalledWith(testError);
-  //   expect(mockResponse.status).not.toHaveBeenCalled();
-  //   expect(mockResponse.json).not.toHaveBeenCalled();
-  // });
-
-  // it('should handle missing code or userId', async () => {
-  //   const testCases = [
-  //     { code: '', userId: 'user123' },
-  //     { code: '123456', userId: '' },
-  //     { code: '', userId: '' },
-  //     {},
-  //   ];
-
-  //   for (const body of testCases) {
-  //     mockRequest.body = body;
-  //     await emailVerificationHandler(
-  //       mockRequest as Request,
-  //       mockResponse as Response,
-  //       mockNext,
-  //     );
-
-  //     expect(mockResponse.status).toHaveBeenCalledWith(404);
-  //     expect(mockResponse.json).toHaveBeenCalledWith({
-  //       message: 'Invalid code',
-  //     });
-  //     mockResponse.status.mockClear();
-  //     mockResponse.json.mockClear();
-  //   }
-  // });
+  it('should successfully verify email with valid code', async () => {
+    mockAuthService.verifyVerificationCode.mockResolvedValueOnce(true as any);
+    mockUserService.verifyNewUser.mockResolvedValueOnce({
+      _id: '1',
+      email: 'email',
+    } as any);
+    mockAuthService.generateAuthToken.mockResolvedValue({
+      accessToken: 'mock-access',
+      rawRefreshToken: 'mock-refresh',
+      hashedRefreshToken: 'hashed-token',
+    });
+    await emailVerificationHandler(
+      mockRequest as any,
+      mockResponse as any,
+      mockNext,
+    );
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      user: expect.objectContaining({
+        _id: expect.any(String),
+        email: expect.any(String),
+      }),
+      accessToken: 'mock-access',
+    });
+    expect(mockResponse.clearCookie).toHaveBeenCalledWith(
+      COOKIE_SIGNUP,
+      COOKIE_OPTIONS,
+    );
+    expect(mockResponse.cookie).toHaveBeenCalledWith(
+      COOKIE_REF_TOKEN,
+      'mock-refresh',
+      COOKIE_OPTIONS,
+    );
+  });
 });

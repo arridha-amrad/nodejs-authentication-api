@@ -86,4 +86,5 @@ export const mockUserService: jest.Mocked<
   checkEmailAndUsernameUniqueness: jest.fn(),
   updateUserPassword: jest.fn(),
   verifyNewUser: jest.fn(),
+  setUserResponse: jest.fn(),
 };
