@@ -1,7 +1,7 @@
 import { setExpiryDate } from '@/utils';
 import mongoose, { InferSchemaType } from 'mongoose';
 
-const RefreshTokenSchema = new mongoose.Schema({
+export const RefreshTokenSchema = new mongoose.Schema({
   token: { type: String, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   expiresAt: {
@@ -16,4 +16,6 @@ const RefreshTokenSchema = new mongoose.Schema({
 
 export const RefreshToken = mongoose.model('RefreshToken', RefreshTokenSchema);
 
-export type TRefreshToken = InferSchemaType<typeof RefreshTokenSchema>;
+export type TRefreshToken = InferSchemaType<typeof RefreshTokenSchema> & {
+  _id: unknown;
+};

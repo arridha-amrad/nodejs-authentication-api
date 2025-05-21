@@ -8,7 +8,7 @@ export const runServer = () => {
   });
 };
 
-connectToMongoDb()
+connectToMongoDb(env.DB_URI)
   .then(() => {
     runServer();
   })

@@ -5,6 +5,7 @@ import { errors as JoseErrors, JWTPayload, jwtVerify, SignJWT } from 'jose';
 export type TokenPayload = JWTPayload & { id: string; jwtVersion: string };
 
 const secret = new TextEncoder().encode(env.JWT_SECRET);
+
 export default class TokenService {
   async createJwt(payload: TokenPayload) {
     return await new SignJWT(payload)

@@ -1,7 +1,7 @@
 import { setExpiryDate } from '@/utils';
 import mongoose, { InferSchemaType } from 'mongoose';
 
-const PasswordResetSchema = new mongoose.Schema({
+export const PasswordResetSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
@@ -23,4 +23,6 @@ export const PasswordReset = mongoose.model(
   PasswordResetSchema,
 );
 
-export type TPasswordReset = InferSchemaType<typeof PasswordResetSchema>;
+export type TPasswordReset = InferSchemaType<typeof PasswordResetSchema> & {
+  _id: unknown;
+};

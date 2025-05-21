@@ -1,16 +1,15 @@
 services:
-  mongodb:
+  nodejs_authentication_api_dev:
     image: mongo
-    container_name: mongodb
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: nodejs_authentication
+      MONGO_INITDB_DATABASE: nodejs_authentication_api_dev
     ports:
       - 27017:27017
     volumes:
-      - mongo_data:/data/db
+      - nodejs_authentication_api_dev_mongo_data:/data/db
 
 volumes:
-  mongo_data:
+  nodejs_authentication_api_dev_mongo_data:
