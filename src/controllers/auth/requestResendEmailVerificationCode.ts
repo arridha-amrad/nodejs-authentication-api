@@ -13,13 +13,11 @@ export default async function requestResendEmailVerificationCode(
     const userService = new UserService();
     const emailService = new EmailService();
     const authService = new AuthService();
-
     const { value } = getCookie(req, 'signup');
     if (!value) {
       res.status(400).json({ message: 'Sign up cookie is missing' });
       return;
     }
-
     const account = await userService.getOneUser({ _id: value });
     if (!account) {
       res.status(404).json({ message: 'User not found' });
@@ -29,9 +27,7 @@ export default async function requestResendEmailVerificationCode(
       res.status(403).json({ message: 'User has been verified' });
       return;
     }
-
     const { code } = await authService.regenerateVerificationCode(account.id);
-
     await emailService.send({
       to: account.email,
       subject: 'New account verification',
@@ -42,11 +38,9 @@ export default async function requestResendEmailVerificationCode(
       </p> <p>Thanks</p>
       `,
     });
-
     res.status(201).json({
       message: `An email has been sent to ${account.email}, please follow the instruction to verify your account.`,
     });
-
     return;
   } catch (err) {
     next(err);
