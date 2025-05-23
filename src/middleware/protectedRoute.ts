@@ -1,6 +1,7 @@
 import TokenService, { TokenPayload } from '@/services/TokenService';
 import UserService from '@/services/UserService';
 import { NextFunction, Request, Response } from 'express';
+import { errors as JoseErrors } from 'jose';
 
 export const protectedRoute = async (
   req: Request,
@@ -39,8 +40,12 @@ export const protectedRoute = async (
 
     req.user = account;
     next();
-  } catch {
-    res.status(401).json({ message: 'Unauthorized' });
+  } catch (err) {
+    if (err instanceof JoseErrors.JWTExpired) {
+      res.status(401).json({ message: 'Token expired' });
+    } else {
+      res.status(401).json({ message: 'Unauthorized' });
+    }
     return;
   }
 };

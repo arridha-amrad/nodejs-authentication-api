@@ -17,6 +17,6 @@
     "esModuleInterop": true,
     "types": ["jest", "node"]
   },
-  "include": ["src"], // Include your source files
+  "include": ["src", "swagger.ts"], // Include your source files
   "exclude": ["node_modules", "dist"] // Exclude build artifacts and dependencies
 }

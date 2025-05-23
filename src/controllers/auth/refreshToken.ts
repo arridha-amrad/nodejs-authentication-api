@@ -15,7 +15,7 @@ export default async function refreshTokenHandler(
     const { ip, userAgent } = getUserAgentAndIp(req);
     const { name, value } = getCookie(req, 'refresh-token');
     if (!value || !name) {
-      res.status(401).json({ message: 'Token is missing' });
+      res.status(401).json({ message: 'Refresh token is missing' });
       return;
     }
     const storedToken = await authService.getRefreshToken(value, ip, userAgent);
