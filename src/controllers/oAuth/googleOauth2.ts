@@ -2,13 +2,16 @@ import {
   COOKIE_GOOGLE_CODE_VERIFIER,
   COOKIE_OPTIONS,
   COOKIE_REF_TOKEN,
+  GOOGLE_OAUTH_SCOPES,
 } from '@/constants';
 import { env } from '@/env';
+import { logger } from '@/logger';
 import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
 import {
   emailToUsername,
   generateRandomBytes,
+  getCookie,
   getUserAgentAndIp,
 } from '@/utils';
 import * as arctic from 'arctic';
@@ -17,25 +20,20 @@ import { NextFunction, Request, Response } from 'express';
 const google = new arctic.Google(
   env.GOOGLE_CLIENT_ID,
   env.GOOGLE_CLIENT_SECRET,
-  `${env.BASE_URL}/api/${env.API_VERSION}/auth/google/callback`,
+  `${env.BASE_URL}/api/${env.API_VERSION}/oauth/google/callback`,
 );
 
-export async function loginWithGoogle(
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-) {
-  try {
-    const state = arctic.generateState();
-    const codeVerifier = arctic.generateCodeVerifier();
-    const scopes = ['openid', 'profile', 'email'];
-    const url = google.createAuthorizationURL(state, codeVerifier, scopes);
-    res.cookie(COOKIE_GOOGLE_CODE_VERIFIER, codeVerifier, COOKIE_OPTIONS);
-    res.redirect(url.toString());
-    return;
-  } catch (err) {
-    next(err);
-  }
+export async function loginWithGoogle(_req: Request, res: Response) {
+  const state = arctic.generateState();
+  const codeVerifier = arctic.generateCodeVerifier();
+  const url = google.createAuthorizationURL(
+    state,
+    codeVerifier,
+    GOOGLE_OAUTH_SCOPES,
+  );
+  res.cookie(COOKIE_GOOGLE_CODE_VERIFIER, codeVerifier, COOKIE_OPTIONS);
+  res.redirect(url.toString());
+  return;
 }
 
 export async function googleOAuth2Callback(
@@ -44,31 +42,26 @@ export async function googleOAuth2Callback(
   next: NextFunction,
 ) {
   const { code } = req.query as {
-    state: string;
-    scope: string;
     code: string;
   };
-
-  const codeVerifier = req.cookies[COOKIE_GOOGLE_CODE_VERIFIER];
+  const { value: codeVerifier } = getCookie(req, 'google-code-verifier');
   if (!code || !codeVerifier) {
     res.status(400).json({
       message: 'Invalid request. Code and codeVerifier are missing',
     });
     return;
   }
-
   const { ip, userAgent } = getUserAgentAndIp(req);
-
   try {
     const userService = new UserService();
-
     const authService = new AuthService();
-
-    const { email } = await getUserFromGoogle(code, codeVerifier);
+    const { email } = await authService.getUserFromGoogle(
+      google,
+      code,
+      codeVerifier,
+    );
     const account = await userService.getOneUser({ email });
-
     let user;
-
     if (!account) {
       const newUsername = `${emailToUsername(email)}${generateRandomBytes(5)}`;
       const {
@@ -89,7 +82,6 @@ export async function googleOAuth2Callback(
         jwtVersion,
       };
     }
-
     const { accessToken, rawRefreshToken } =
       await authService.generateAuthToken({
         jwtVersion: user.jwtVersion,
@@ -97,33 +89,12 @@ export async function googleOAuth2Callback(
         ip,
         userAgent,
       });
-
     res.clearCookie(COOKIE_GOOGLE_CODE_VERIFIER, COOKIE_OPTIONS);
-
     res.cookie(COOKIE_REF_TOKEN, rawRefreshToken, COOKIE_OPTIONS);
-
     res.status(200).json({ accessToken });
-
     return;
   } catch (err) {
-    console.log(err);
-
+    logger.error(err);
     next(err);
   }
 }
-
-const getUserFromGoogle = async (code: string, codeVerifier: string) => {
-  const tokens = await google.validateAuthorizationCode(code, codeVerifier);
-  const accessToken = tokens.accessToken();
-  const response = await fetch(
-    'https://openidconnect.googleapis.com/v1/userinfo',
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-  const user = (await response.json()) as { name: string; email: string };
-
-  return user;
-};

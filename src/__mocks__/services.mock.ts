@@ -26,6 +26,8 @@ export const mockAuthService: jest.Mocked<
   regenerateVerificationCode: jest.fn(),
   resetUserPassword: jest.fn(),
   verifyVerificationCode: jest.fn(),
+  getUserFromGithub: jest.fn(),
+  getUserFromGoogle: jest.fn(),
 };
 
 export const mockEmailService: jest.Mocked<Omit<EmailService, 'init'>> = {

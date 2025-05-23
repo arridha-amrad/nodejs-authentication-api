@@ -15,3 +15,6 @@ export const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
 };
+
+export const GITHUB_OAUTH_SCOPES = ['user:email'];
+export const GOOGLE_OAUTH_SCOPES = ['openid', 'profile', 'email'];

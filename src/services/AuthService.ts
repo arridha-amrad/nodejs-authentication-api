@@ -5,6 +5,7 @@ import VerificationCodeRepository from '@/repositories/VerificationCodeRepo';
 import { Types } from 'mongoose';
 import TokenService from './TokenService';
 import UserService from './UserService';
+import { GitHub, Google } from 'arctic';
 
 type TGenAuthToken = {
   userId: Types.ObjectId;
@@ -107,5 +108,32 @@ export default class AuthService {
       rawRefreshToken: rawToken,
       accessToken,
     };
+  }
+
+  async getUserFromGithub(github: GitHub, code: string) {
+    const tokens = await github.validateAuthorizationCode(code);
+    const accessToken = tokens.accessToken();
+    const response = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const user = (await response.json()) as { email: string };
+    return user;
+  }
+
+  async getUserFromGoogle(google: Google, code: string, codeVerifier: string) {
+    const tokens = await google.validateAuthorizationCode(code, codeVerifier);
+    const accessToken = tokens.accessToken();
+    const response = await fetch(
+      'https://openidconnect.googleapis.com/v1/userinfo',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+    const user = (await response.json()) as { name: string; email: string };
+    return user;
   }
 }
