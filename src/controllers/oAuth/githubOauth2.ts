@@ -17,7 +17,7 @@ import {
 const github = new arctic.GitHub(
   env.GITHUB_CLIENT_ID,
   env.GITHUB_CLIENT_SECRET,
-  `${env.BASE_URL}/api/${env.API_VERSION}/auth/github/callback`,
+  `${env.BASE_URL}/api/${env.API_VERSION}/oauth/github/callback`,
 );
 
 export const loginWithGithub = (_req: Request, res: Response) => {

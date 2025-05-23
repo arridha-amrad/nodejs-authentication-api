@@ -1,5 +1,5 @@
-import { COOKIE_SIGNUP, VERIFICATION_CODE_LENGTH } from '@/constants';
-import { formatZodErrors } from '@/utils';
+import { VERIFICATION_CODE_LENGTH } from '@/constants';
+import { formatZodErrors, getCookie } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 
@@ -22,7 +22,9 @@ export const validateEmailVerificationInput = (
   res: Response,
   next: NextFunction,
 ) => {
-  const userId = req.cookies[COOKIE_SIGNUP];
+  const { value: userId } = getCookie(req, 'signup');
+  console.log(userId);
+
   if (!userId) {
     res.status(400).json({ message: 'Cookie signup is missing' });
     return;
@@ -32,6 +34,9 @@ export const validateEmailVerificationInput = (
     res.status(400).json({ errors: validation.errors });
     return;
   }
-  req.body = validation.data;
+  req.body = {
+    userId,
+    code: validation.data?.code,
+  };
   next();
 };

@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import getAuthUser from '../getAuthUser';
 
 describe('Get Auth User Controller', () => {

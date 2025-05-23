@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { connectToMongoDb } from '@/database/db.mongo';
+import mongoose from 'mongoose';
 
 jest.mock('mongoose');
 
@@ -26,6 +26,7 @@ describe('connectToMongoDb', () => {
   });
 
   it('should connect successfully to MongoDB', async () => {
+    // eslint-disable-next-line
     mockedConnect.mockResolvedValueOnce({} as any);
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 

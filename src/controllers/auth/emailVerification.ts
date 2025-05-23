@@ -14,6 +14,7 @@ export default async function emailVerificationHandler(
     const authService = new AuthService();
 
     const { code, userId } = req.body;
+
     const { ip, userAgent } = getUserAgentAndIp(req);
 
     const storedCode = await authService.verifyVerificationCode(userId, code);

@@ -7,7 +7,6 @@ let RefTokenModel: Model<TRefreshToken>;
 let refTokenRepo: RefreshTokenRepository;
 
 describe('Refresh Token Repository', () => {
-  let dummyId: string;
   beforeAll(async () => {
     await connectToMongoDb(process.env.DB_URI);
     RefTokenModel =
@@ -20,13 +19,12 @@ describe('Refresh Token Repository', () => {
   });
   beforeEach(async () => {
     await RefTokenModel.deleteMany({});
-    const newData = await RefTokenModel.create({
+    await RefTokenModel.create({
       token: 'hashed-token',
       ip: 'ip',
       userAgent: 'user-agent',
       userId: new Types.ObjectId(),
     });
-    dummyId = newData.id;
   });
 
   it('should create new refresh token record', async () => {
