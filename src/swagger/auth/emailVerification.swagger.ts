@@ -1,25 +1,19 @@
 import { createMessageResponse, ServerErrorResponse } from '../helpers';
 
-const LoginRequest = {
+const Request = {
   type: 'object',
-  required: ['identity', 'password'],
+  required: ['code'],
   properties: {
-    identity: {
+    code: {
       type: 'string',
-      description: 'Email or username',
-      example: 'user@example.com',
-    },
-    password: {
-      type: 'string',
-      description: 'User password',
-      format: 'password',
-      example: 'P@ssw0rd123',
+      description: 'Code',
+      example: '1x23ml8y',
     },
   },
 };
 
-const LoginSuccessful = {
-  description: 'Refresh token is successful',
+const Successful = {
+  description: 'Email Verification is successful',
   content: {
     'application/json': {
       schema: {
@@ -35,12 +29,11 @@ const LoginSuccessful = {
           },
         },
       },
-      example: { accessToken: 'jwt_token_here' },
     },
   },
 };
 
-const LoginValidationError = {
+const ValidationError = {
   description: 'Validation error',
   content: {
     'application/json': {
@@ -51,8 +44,7 @@ const LoginValidationError = {
             type: 'object',
             additionalProperties: { type: 'string' },
             example: {
-              identity: 'Identity is required',
-              password: 'Password must be at least 6 characters',
+              code: 'Invalid Code',
             },
           },
         },
@@ -61,34 +53,27 @@ const LoginValidationError = {
   },
 };
 
-export const loginRoute = {
-  '/auth/login': {
+export const emailVerificationRoute = {
+  '/auth/email-verification': {
     post: {
       tags: ['Auth'],
-      summary: 'Login',
+      summary: 'Email Verification',
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: LoginRequest,
+            schema: Request,
           },
         },
       },
       responses: {
-        200: LoginSuccessful,
-        400: LoginValidationError,
+        200: Successful,
+        400: ValidationError,
         401: createMessageResponse(
-          'The user entered wrong password',
-          'Invalid credentials',
+          'Unauthorized action',
+          'Cookie signup is missing',
         ),
-        403: createMessageResponse(
-          'The owner of this account does not verify its account yet',
-          'Account is not verified',
-        ),
-        404: createMessageResponse(
-          'No account registered with that email or username',
-          'Account not found',
-        ),
+        404: createMessageResponse('Not found', 'User not found'),
         500: ServerErrorResponse,
       },
     },

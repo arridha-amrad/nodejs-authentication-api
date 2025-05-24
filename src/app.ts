@@ -4,8 +4,6 @@ import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import authRoutes from './routes/authRoutes';
 import oAuthRoutes from './routes/oAuthRoutes';
-import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './swagger';
 
 const app = express();
 
@@ -20,22 +18,12 @@ app.use(cookieParser());
 app.set('trust proxy', true);
 
 app.use(`/api/${env.API_VERSION}/auth`, authRoutes);
-app.use(`/api/${env.API_VERSION}/oAuth`, oAuthRoutes);
+app.use(`/api/${env.API_VERSION}/oauth`, oAuthRoutes);
 
 // eslint-disable-next-line
 app.use((_err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ message: 'Internal server error' });
   return;
 });
-
-app.use(
-  '/api-docs',
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, {
-    swaggerOptions: {
-      withCredentials: true,
-    },
-  }),
-);
 
 export default app;

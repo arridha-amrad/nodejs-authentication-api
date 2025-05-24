@@ -81,7 +81,7 @@ describe('signup endpoint', () => {
         username: 'valid_username',
       });
       expect(mockUserService.addNewUser).not.toHaveBeenCalled();
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(403);
       expect(response.body).toMatchObject({
         message: 'username has been taken',
       });
@@ -98,7 +98,7 @@ describe('signup endpoint', () => {
         username: 'valid_username',
       });
       expect(mockUserService.addNewUser).not.toHaveBeenCalled();
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(403);
       expect(response.body).toMatchObject({
         message: 'email has been taken',
       });

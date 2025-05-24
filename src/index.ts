@@ -1,11 +1,12 @@
 import { env } from '@/env';
 import app from './app';
 import { connectToMongoDb } from './database/db.mongo';
+import { loadSwaggerDocs } from './swagger/loadSwaggerDoc';
 
-export const runServer = () => {
+export const runServer = async () => {
+  await loadSwaggerDocs(app);
   app.listen(env.PORT, () => {
     console.log('Server is running');
-    console.log('Swagger docs at http://localhost:5000/api-docs');
   });
 };
 

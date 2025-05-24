@@ -1,4 +1,4 @@
-import { createMessageResponse } from '../helpers';
+import { createMessageResponse, ServerErrorResponse } from '../helpers';
 
 const RefreshTokenSuccessful = {
   description: 'Refresh token is successful',
@@ -33,7 +33,7 @@ export const refreshTokenRoute = {
           'User not found or Token not found',
           'User not found',
         ),
-        500: createMessageResponse('Server Error', 'Internal server error'),
+        500: ServerErrorResponse,
       },
     },
   },

@@ -11,10 +11,12 @@ export const createMessageResponse = (
   },
 });
 
-export const createErrorResponse = (
-  code: number,
-  message: string,
-  description?: string,
-) => ({
-  [code]: createMessageResponse(`${description ?? message}`, message),
-});
+export const ServerErrorResponse = createMessageResponse(
+  'Server Error',
+  'Internal server error',
+);
+
+export const UnAuthorizedByProtectedRoute = createMessageResponse(
+  'Wrong format of bearer token or No accessToken in request headers or Invalid token payload or Token expired.',
+  'Token expired',
+);

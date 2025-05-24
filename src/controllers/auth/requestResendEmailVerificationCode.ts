@@ -15,7 +15,7 @@ export default async function requestResendEmailVerificationCode(
     const authService = new AuthService();
     const { value } = getCookie(req, 'signup');
     if (!value) {
-      res.status(400).json({ message: 'Sign up cookie is missing' });
+      res.status(401).json({ message: 'Sign up cookie is missing' });
       return;
     }
     const account = await userService.getOneUser({ _id: value });
@@ -38,7 +38,7 @@ export default async function requestResendEmailVerificationCode(
       </p> <p>Thanks</p>
       `,
     });
-    res.status(201).json({
+    res.status(200).json({
       message: `An email has been sent to ${account.email}, please follow the instruction to verify your account.`,
     });
     return;

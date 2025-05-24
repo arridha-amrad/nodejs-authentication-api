@@ -5,7 +5,7 @@ import {
   GOOGLE_OAUTH_SCOPES,
 } from '@/constants';
 import { env } from '@/env';
-import { logger } from '@/logger';
+
 import AuthService from '@/services/AuthService';
 import UserService from '@/services/UserService';
 import {
@@ -94,7 +94,6 @@ export async function googleOAuth2Callback(
     res.status(200).json({ accessToken });
     return;
   } catch (err) {
-    logger.error(err);
     next(err);
   }
 }

@@ -4,6 +4,7 @@ import {
   VerificationCode,
 } from '@/models/VerificationCodeModel';
 import { generateRandomBytes } from '@/utils';
+import { Query } from 'mongoose';
 
 export default class VerificationCodeRepository {
   async create(userId: string) {
@@ -33,7 +34,7 @@ export default class VerificationCodeRepository {
     );
   }
 
-  async deleteMany(userId: string) {
+  async deleteMany(userId: string): Promise<Query<any, any>> {
     return VerificationCode.deleteMany({ userId });
   }
 }

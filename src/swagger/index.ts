@@ -1,18 +1,36 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import { loginResponse } from './auth/login.swagger';
+import { getAuthUserRoute } from './auth/getAuthUser.swagger';
+import { loginRoute } from './auth/login.swagger';
 import { refreshTokenRoute } from './auth/refreshToken.swagger';
-import {
-  getAuthUserResponse,
+import { signupRoute } from './auth/signup.swagger';
+import { logoutRoute } from './auth/logout.swagger';
+import { emailVerificationRoute } from './auth/emailVerification.swagger';
+import { forgotPasswordRoute } from './auth/forgotPassword.swagger';
+import { resetPasswordRoute } from './auth/resetPassword.swagger';
+import { requestResendEmailVerificationCodeRoute } from './auth/requestResendEmailVerificationCode.swagger';
+import { loginWithGithubRoute, loginWithGoogleRoute } from './oauth.swagger';
+
+const paths = Object.assign(
+  {},
+  signupRoute,
+  emailVerificationRoute,
+  loginRoute,
   getAuthUserRoute,
-} from './auth/getAuthUser.swagger';
+  refreshTokenRoute,
+  logoutRoute,
+  forgotPasswordRoute,
+  resetPasswordRoute,
+  requestResendEmailVerificationCodeRoute,
+  loginWithGithubRoute,
+  loginWithGoogleRoute,
+);
 
 const swaggerOptions: swaggerJSDoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'My Express API',
+      title: 'NodeJs Authentiction API',
       version: '1.0.0',
-      description: 'API documentation with Swagger and TypeScript',
     },
     servers: [
       {
@@ -36,13 +54,6 @@ const swaggerOptions: swaggerJSDoc.Options = {
             username: { type: 'string', example: 'john_doe' },
           },
         },
-        AuthResponse: {
-          type: 'object',
-          properties: {
-            accessToken: { type: 'string', example: 'jwt_token_here' },
-            user: { $ref: '#/components/schemas/User' },
-          },
-        },
         MessageResponse: {
           type: 'object',
           properties: {
@@ -50,86 +61,9 @@ const swaggerOptions: swaggerJSDoc.Options = {
           },
           example: { message: 'Internal server error' },
         },
-        ValidationError: {
-          type: 'object',
-          properties: {
-            errors: {
-              type: 'object',
-              additionalProperties: { type: 'string' },
-              example: {
-                identity: 'Identity is required',
-                password: 'Password must be at least 6 characters',
-              },
-            },
-          },
-        },
-      },
-      responses: {
-        ServerError: {
-          description: 'Internal Server Error',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/MessageResponse',
-              },
-            },
-          },
-        },
-        ...loginResponse,
-        ...getAuthUserResponse,
-        ValidationError: {
-          description: 'Validation error',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/ValidationError' },
-            },
-          },
-        },
-        Unauthorized: {
-          description: 'UnAuthorized',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/MessageResponse' },
-              example: { message: 'UnAuthorized' },
-            },
-          },
-        },
-        Forbidden: {
-          description: 'Account not verified',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/MessageResponse' },
-              example: { message: 'Account is not verified' },
-            },
-          },
-        },
-        UnAuthorizedByProtectedRoute: {
-          description: `Wrong format of bearer token or 
-            No accessToken in request headers or 
-            Invalid token payload or 
-            Token expired.`,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/MessageResponse' },
-              example: { message: 'Missing or invalid token' },
-            },
-          },
-        },
-        UserNotFound: {
-          description: 'User not found',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/MessageResponse' },
-              example: { message: 'User not found' },
-            },
-          },
-        },
       },
     },
-    paths: {
-      ...getAuthUserRoute,
-      ...refreshTokenRoute,
-    },
+    paths,
   },
   apis: ['./src/routes/**/*.ts'], // Adjust to match your routes location
 };

@@ -19,7 +19,7 @@ export default async function emailVerificationHandler(
 
     const storedCode = await authService.verifyVerificationCode(userId, code);
     if (!storedCode) {
-      res.status(404).json({ message: 'Invalid code' });
+      res.status(401).json({ message: 'Invalid code' });
       return;
     }
 
@@ -42,7 +42,7 @@ export default async function emailVerificationHandler(
     res.cookie(COOKIE_REF_TOKEN, rawRefreshToken, COOKIE_OPTIONS);
 
     res.status(200).json({
-      user: account,
+      user: userService.setUserResponse(account),
       accessToken,
     });
 

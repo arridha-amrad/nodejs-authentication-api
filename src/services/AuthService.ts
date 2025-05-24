@@ -31,6 +31,7 @@ export default class AuthService {
 
   async getPasswordResetData(token: string, email: string) {
     const hashedToken = await this.tokenService.hashRandomBytes(token);
+
     const storedPwdResetData = await this.pwdResetRepo.findOne({
       token: hashedToken,
       email,

@@ -26,7 +26,7 @@ export const validateEmailVerificationInput = (
   console.log(userId);
 
   if (!userId) {
-    res.status(400).json({ message: 'Cookie signup is missing' });
+    res.status(401).json({ message: 'Cookie signup is missing' });
     return;
   }
   const validation = validate(req.body);

@@ -22,7 +22,7 @@ export default async function signupHandler(
 
     if (typeof result !== 'undefined') {
       const { constraint } = result;
-      res.status(400).json({ message: `${constraint} has been taken` });
+      res.status(403).json({ message: `${constraint} has been taken` });
       return;
     }
 
