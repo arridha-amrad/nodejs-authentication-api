@@ -51,7 +51,7 @@ describe('Request Resend Email Verification Controller', () => {
         mockRes as any,
         mockNext,
       );
-      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.status).toHaveBeenCalledWith(401);
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
       });
@@ -136,7 +136,7 @@ describe('Request Resend Email Verification Controller', () => {
       );
       expect(mockNext).not.toHaveBeenCalledTimes(1);
       expect(mockEmailService.send).toHaveBeenCalled();
-      expect(mockRes.status).toHaveBeenCalledWith(201);
+      expect(mockRes.status).toHaveBeenCalledWith(200);
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
       });

@@ -12,6 +12,7 @@ export const runServer = async () => {
 
 connectToMongoDb(env.DB_URI)
   .then(() => {
+    console.log('✅ MongoDB connected');
     runServer();
   })
   .catch((err) => {

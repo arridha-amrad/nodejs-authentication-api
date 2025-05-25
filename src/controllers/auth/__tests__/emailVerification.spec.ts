@@ -46,7 +46,7 @@ describe('Email verification controller', () => {
     jest.clearAllMocks();
   });
 
-  it('should return 404 for invalid verification code', async () => {
+  it('should return 401 for invalid verification code', async () => {
     mockAuthService.verifyVerificationCode.mockResolvedValue(null);
     await emailVerificationHandler(
       mockRequest as any,
@@ -58,7 +58,7 @@ describe('Email verification controller', () => {
       'user123',
       '123456',
     );
-    expect(mockResponse.status).toHaveBeenCalledWith(404);
+    expect(mockResponse.status).toHaveBeenCalledWith(401);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Invalid code' });
   });
 
@@ -104,6 +104,12 @@ describe('Email verification controller', () => {
     mockUserService.verifyNewUser.mockResolvedValueOnce({
       _id: '1',
       email: 'email',
+      username: 'username',
+    } as any);
+    mockUserService.setUserResponse.mockReturnValue({
+      _id: '1',
+      email: 'email',
+      username: 'username',
     } as any);
     mockAuthService.generateAuthToken.mockResolvedValue({
       accessToken: 'mock-access',

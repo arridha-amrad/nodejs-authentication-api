@@ -12,7 +12,8 @@ export type VerificationInput = z.infer<typeof schema>;
 export const validate = (data: unknown) => {
   const result = schema.safeParse(data);
   if (!result.success) {
-    return { valid: false, errors: formatZodErrors(result.error) };
+    const errors = formatZodErrors(result.error);
+    return { valid: false, errors };
   }
   return { valid: true, data: result.data };
 };
@@ -23,8 +24,6 @@ export const validateEmailVerificationInput = (
   next: NextFunction,
 ) => {
   const { value: userId } = getCookie(req, 'signup');
-  console.log(userId);
-
   if (!userId) {
     res.status(401).json({ message: 'Cookie signup is missing' });
     return;
