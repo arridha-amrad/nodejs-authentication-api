@@ -1,53 +1,89 @@
-import { validate } from '../validator/login';
+import { NextFunction, Request, Response } from 'express';
+import { validateLoginInput } from '../validator/login';
 
-describe('validate login input', () => {
-  it('should be valid inputs', () => {
-    const result = validate({
-      identity: 'john_doe',
-      password: '123456',
-    });
-    expect(result.valid).toBe(true);
-    expect(result.data).toBeTruthy();
+describe('Login Input Validation Middleware', () => {
+  let mockReq: Partial<Request>;
+  let mockRes: Partial<Response>;
+  let mockNext: jest.MockedFunction<NextFunction>;
+  beforeEach(() => {
+    mockReq = {};
+    mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    mockNext = jest.fn();
+    jest.clearAllMocks();
   });
-  it('should return validation errors for both identity and password', async () => {
-    const result = validate({
-      identity: '',
-      password: '',
+
+  describe('Failed the validation and return', () => {
+    const invalidReqBody = [
+      {
+        body: {
+          identity: '',
+          password: '',
+        },
+        messages: {
+          identity: 'Identity is required',
+          password: 'Password must be at least 6 characters',
+        },
+      },
+      {
+        body: {
+          identity: '@mail.com',
+          password: '1234',
+        },
+        messages: {
+          identity: 'Must be a valid email or username',
+          password: 'Password must be at least 6 characters',
+        },
+      },
+      {
+        body: {
+          identity: 'username',
+          password: '1234',
+        },
+        messages: {
+          password: 'Password must be at least 6 characters',
+        },
+      },
+    ];
+    invalidReqBody.forEach(({ body, messages }) => {
+      it(`for identity: ${body.identity} password: ${body.password}`, () => {
+        mockReq = {
+          body,
+        };
+        validateLoginInput(mockReq as any, mockRes as any, mockNext);
+        expect(mockRes.status).toHaveBeenCalledWith(400);
+        expect(mockRes.json).toHaveBeenCalledWith({
+          errors: expect.objectContaining(messages),
+        });
+      });
     });
-    expect(result.errors).toMatchObject({
-      identity: 'Identity is required',
-      password: 'Password must be at least 6 characters',
-    });
-    expect(result.valid).toBe(false);
   });
-  it("should return 'Identity is required'", async () => {
-    const result = validate({
-      identity: '',
-      password: 'validPwd123!',
+
+  describe('Passed the validation and call next()', () => {
+    const validReqBody = [
+      {
+        identity: 'john_doe.doe',
+        password: 'P@ss123',
+      },
+      {
+        identity: 'john_doe@mail.com',
+        password: '123456',
+      },
+      {
+        identity: 'john.doe@mail.com',
+        password: '_john123',
+      },
+    ];
+
+    validReqBody.forEach(({ identity, password }) => {
+      it(`for identity: ${identity} password: ${password}`, () => {
+        mockReq.body = { identity, password };
+        validateLoginInput(mockReq as any, mockRes as any, mockNext);
+        expect(mockNext).toHaveBeenCalled();
+        expect(mockReq.body).toMatchObject({ identity, password });
+      });
     });
-    expect(result.errors).toMatchObject({
-      identity: 'Identity is required',
-    });
-    expect(result.valid).toBe(false);
-  });
-  it("should return 'Must be a valid email or username'", async () => {
-    const result = validate({
-      identity: 'test@',
-      password: 'validPwd123!',
-    });
-    expect(result.errors).toMatchObject({
-      identity: 'Must be a valid email or username',
-    });
-    expect(result.valid).toBe(false);
-  });
-  it("should return 'Password must be at least 6 characters'", async () => {
-    const result = validate({
-      identity: 'john_doe',
-      password: '123!',
-    });
-    expect(result.errors).toMatchObject({
-      password: 'Password must be at least 6 characters',
-    });
-    expect(result.valid).toBe(false);
   });
 });

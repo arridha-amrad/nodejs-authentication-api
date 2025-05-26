@@ -4,7 +4,6 @@ import {
   getUserAgentAndIp,
   emailToUsername,
   getCookie,
-  formatZodErrors,
 } from './utils'; // Adjust path
 import { Request } from 'express';
 import {
@@ -151,24 +150,6 @@ describe('Utils', () => {
       // @ts-expect-error test invalid type
       const result = getCookie(req, 'invalid');
       expect(result).toEqual({ name: undefined, value: undefined });
-    });
-  });
-
-  describe('formatZodErrors', () => {
-    const schema = z.object({
-      email: z.string().email(),
-      password: z.string().min(6),
-    });
-
-    it('should return formatted error messages', () => {
-      const result = schema.safeParse({ email: 'invalid', password: '123' });
-      expect(result.success).toBe(false);
-      // eslint-disable-next-line
-      const formatted = formatZodErrors(result.error as ZodError<any>);
-      expect(formatted).toEqual({
-        email: expect.any(String),
-        password: expect.any(String),
-      });
     });
   });
 });

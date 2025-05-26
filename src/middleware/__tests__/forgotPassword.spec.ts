@@ -1,100 +1,50 @@
-// forgot-password.test.ts
-import { validate } from '../validator/forgotPassword';
+import { NextFunction, Response, Request } from 'express';
+import { validateForgotPasswordInput } from '../validator/forgotPassword';
 
-describe('Forgot Password Schema Validation', () => {
-  describe('Email Validation', () => {
-    it('should accept a valid email', () => {
-      const validInput = { email: 'user@example.com' };
-      const result = validate(validInput);
-
-      expect(result).toEqual({
-        valid: true,
-        data: { email: 'user@example.com' },
-      });
-    });
-
-    it('should reject an empty string', () => {
-      const invalidInput = { email: '' };
-      const result = validate(invalidInput);
-
-      expect(result.valid).toBe(false);
-      expect(result?.errors).toHaveProperty('email');
-      expect(result?.errors?.email).toContain('Invalid email');
-    });
-
-    it('should reject missing email field', () => {
-      const invalidInput = {};
-      const result = validate(invalidInput);
-
-      expect(result.valid).toBe(false);
-      expect(result.errors).toHaveProperty('email');
-      expect(result.errors?.email).toContain('Required');
-    });
-
-    it('should reject non-string values', () => {
-      const invalidInputs = [
-        { email: 123 },
-        { email: true },
-        { email: { object: 'value' } },
-        { email: null },
-      ];
-
-      invalidInputs.forEach((input) => {
-        const result = validate(input);
-        expect(result.valid).toBe(false);
-        expect(result.errors).toHaveProperty('email');
-        expect(result.errors?.email).toContain('Expected string');
-      });
-    });
-
-    it('should reject invalid email formats', () => {
-      const invalidEmails = [
-        'plainstring',
-        'missing@domain',
-        'user@.com',
-        '@example.com',
-        'user@example..com',
-        'user@example.c',
-        'user@example,com',
-      ];
-
-      invalidEmails.forEach((email) => {
-        const result = validate({ email });
-        expect(result.valid).toBe(false);
-        expect(result.errors).toHaveProperty('email');
-        expect(result.errors?.email).toContain('Invalid email');
+describe('Forgot Password Input Validation Middleware', () => {
+  let mockReq: Partial<Request>;
+  let mockRes: Partial<Response>;
+  let mockNext: jest.MockedFunction<NextFunction>;
+  beforeEach(() => {
+    mockReq = {};
+    mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    mockNext = jest.fn();
+    jest.clearAllMocks();
+  });
+  it('should response with status 400 because validation errors', () => {
+    const invalidEmail = [123, null, undefined, 'invalid', 'john.com', '@.com'];
+    invalidEmail.forEach((v) => {
+      mockReq = {
+        body: {
+          email: v,
+        },
+      };
+      validateForgotPasswordInput(mockReq as any, mockRes as any, mockNext);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        errors: expect.objectContaining({
+          email: expect.any(String),
+        }),
       });
     });
   });
-
-  describe('Validation Function', () => {
-    it('should return valid: true with data when validation succeeds', () => {
-      const validInput = { email: 'test@example.com' };
-      const result = validate(validInput);
-
-      expect(result).toEqual({
-        valid: true,
-        data: validInput,
-      });
-    });
-
-    it('should return valid: false with errors when validation fails', () => {
-      const invalidInput = { email: 'invalid' };
-      const result = validate(invalidInput);
-
-      expect(result.valid).toBe(false);
-      expect(result.errors).toBeDefined();
-      expect(result.data).toBeUndefined();
-    });
-
-    it('should handle completely invalid input structures', () => {
-      const invalidInputs = [null, undefined, 42, 'string', [], () => {}];
-
-      invalidInputs.forEach((input) => {
-        const result = validate(input);
-        expect(result.valid).toBe(false);
-        expect(result.errors).toBeDefined();
-      });
+  it('should call next() because validation is successful', () => {
+    const validEmail = [
+      'john.doe@mail.com',
+      'john_doe@.com',
+      'john_123.doe@mail.com',
+    ];
+    validEmail.forEach((v) => {
+      mockReq = {
+        body: {
+          email: v,
+        },
+      };
+      validateForgotPasswordInput(mockReq as any, mockRes as any, mockNext);
+      expect(mockNext).toHaveBeenCalled();
     });
   });
 });

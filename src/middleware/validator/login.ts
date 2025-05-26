@@ -1,7 +1,6 @@
-import { formatZodErrors } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
-
 import { z } from 'zod';
+import { formatZodErrors } from './formatZodErrors';
 
 export const schema = z.object({
   identity: z
@@ -18,26 +17,16 @@ export const schema = z.object({
 
 export type LoginInput = z.infer<typeof schema>;
 
-export const validate = (data: unknown) => {
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    return { valid: false, errors: formatZodErrors(result.error) };
-  }
-  return { valid: true, data: result.data };
-};
-
 export const validateLoginInput = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const validation = validate(req.body);
-
-  if (!validation.valid) {
-    res.status(400).json({ errors: validation.errors });
+  const validation = schema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({ errors: formatZodErrors(validation.error) });
     return;
   }
-
   req.body = validation.data;
   next();
 };

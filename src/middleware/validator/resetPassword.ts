@@ -1,46 +1,45 @@
-import { formatZodErrors } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
+import { formatZodErrors } from './formatZodErrors';
+
+export const messages = {
+  pwdTooShort: 'Password must be at least 8 characters',
+  pwdMissingLowercase: 'Password must contain at least one lowercase letter',
+  pwdMissingUppercase: 'Password must contain at least one uppercase letter',
+  pwdMissingNumber: 'Password must contain at least one number',
+  pwdMissingSpecialCharacter:
+    'Password must contain at least one special character',
+  pwdPasswordNotMatch: 'Passwords do not match',
+};
 
 export const schema = z
   .object({
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(
-        /[^a-zA-Z0-9]/,
-        'Password must contain at least one special character',
-      ),
+      .min(8, messages.pwdTooShort)
+      .regex(/[a-z]/, messages.pwdMissingLowercase)
+      .regex(/[A-Z]/, messages.pwdMissingUppercase)
+      .regex(/[0-9]/, messages.pwdMissingNumber)
+      .regex(/[^a-zA-Z0-9]/, messages.pwdMissingSpecialCharacter),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ['confirmPassword'],
-    message: 'Passwords do not match',
+    message: messages.pwdPasswordNotMatch,
   });
 
 export type ResetPasswordInput = z.infer<typeof schema>;
-
-export const validate = (data: unknown) => {
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    return { valid: false, errors: formatZodErrors(result.error) };
-  }
-  return { valid: true, data: result.data };
-};
 
 export const validateResetPasswordInput = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const validation = validate(req.body);
-  if (!validation.valid) {
-    res.status(400).json({ errors: validation.errors });
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ errors: formatZodErrors(result.error) });
     return;
   }
-  req.body = validation.data;
+  req.body = result.data;
   next();
 };

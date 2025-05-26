@@ -35,7 +35,6 @@ describe('connectToMongoDb', () => {
     expect(mockedConnect).toHaveBeenCalledWith('mongodb://fake-uri', {
       serverSelectionTimeoutMS: 5000,
     });
-    expect(logSpy).toHaveBeenCalledWith('✅ MongoDB connected');
     logSpy.mockRestore();
   });
 

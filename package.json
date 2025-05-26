@@ -13,7 +13,7 @@
     "compose:dev:down": "docker compose -f docker/compose.dev.yml down",
     "compose:test:up": "docker compose -f docker/compose.test.yml up -d",
     "compose:test:down": "docker compose -f docker/compose.test.yml down",
-    "test": "cross-env NODE_ENV=test jest --clear-cache && jest",
+    "test": "cross-env NODE_ENV=test jest --clear-cache && jest --watch",
     "test:teardown": "docker-compose -f docker/compose.test.yml down -v",
     "test:watch": "NODE_ENV=test jest --watch",
     "test:cov": "cross-env NODE_ENV=test jest --coverage"

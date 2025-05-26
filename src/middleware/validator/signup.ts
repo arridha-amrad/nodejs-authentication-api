@@ -1,10 +1,10 @@
-import { formatZodErrors } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 import sanitizeHtml from 'sanitize-html';
 
 import { z } from 'zod';
+import { formatZodErrors } from './formatZodErrors';
 
-const signupSchema = z.object({
+const schema = z.object({
   username: z
     .string()
     .min(3, 'Username must be at least 3 characters')
@@ -12,7 +12,7 @@ const signupSchema = z.object({
     .transform((val) =>
       sanitizeHtml(val, { allowedTags: [], allowedAttributes: {} }),
     ),
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email'),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
@@ -25,31 +25,18 @@ const signupSchema = z.object({
     ),
 });
 
-export type SignupInput = z.infer<typeof signupSchema>;
-
-// Extracted validation logic for better testability
-export const validate = (data: unknown) => {
-  const result = signupSchema.safeParse(data);
-
-  if (!result.success) {
-    return { valid: false, errors: formatZodErrors(result.error) };
-  }
-
-  return { valid: true, data: result.data };
-};
+export type SignupInput = z.infer<typeof schema>;
 
 export const validateSignupInput = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const validation = validate(req.body);
-
-  if (!validation.valid) {
-    res.status(400).json({ errors: validation.errors });
+  const result = schema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ errors: formatZodErrors(result.error) });
     return;
   }
-
-  req.body = validation.data;
+  req.body = result.data;
   next();
 };
