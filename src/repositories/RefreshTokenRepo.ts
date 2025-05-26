@@ -1,5 +1,4 @@
 import { RefreshToken, TRefreshToken } from '@/models/RefreshTokenModel';
-import { setExpiryDate } from '@/utils';
 
 type TStoredRefToken = Pick<
   TRefreshToken,
@@ -14,14 +13,6 @@ export default class RefreshTokenRepository {
 
   async findOne(filter: Partial<TRefreshToken>) {
     return RefreshToken.findOne(filter);
-  }
-
-  async updateOne(id: string, newToken: string) {
-    return RefreshToken.findByIdAndUpdate(id, {
-      token: newToken,
-      createdAt: new Date(),
-      expiresAt: setExpiryDate(7, 'days'),
-    });
   }
 
   async deleteOne(hashedToken: string) {

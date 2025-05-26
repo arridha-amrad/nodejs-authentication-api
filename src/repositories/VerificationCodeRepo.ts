@@ -34,6 +34,7 @@ export default class VerificationCodeRepository {
     );
   }
 
+  // eslint-disable-next-line
   async deleteMany(userId: string): Promise<Query<any, any>> {
     return VerificationCode.deleteMany({ userId });
   }

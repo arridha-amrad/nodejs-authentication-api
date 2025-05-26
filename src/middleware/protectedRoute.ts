@@ -38,6 +38,8 @@ export const protectedRoute = async (
       return;
     }
 
+    console.log(account);
+
     req.user = account;
     next();
   } catch (err) {

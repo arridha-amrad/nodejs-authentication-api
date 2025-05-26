@@ -2,7 +2,7 @@ import { VERIFICATION_CODE_LENGTH } from '@/constants';
 import { getCookie } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
-import { formatZodErrors } from './formatZodErrors';
+import { formatZodErrors } from './helper';
 
 const schema = z.object({
   code: z.string().length(VERIFICATION_CODE_LENGTH, 'Invalid code'),

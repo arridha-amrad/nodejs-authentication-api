@@ -4,9 +4,9 @@
   "description": "",
   "main": "src/",
   "scripts": {
-    "dev": "NODE_ENV=development tsx watch -r tsconfig-paths/register src",
-    "build": "NODE_ENV=production tsup",
-    "start": "node dist/index.js",
+    "dev": "cross-env NODE_ENV=development tsx watch -r tsconfig-paths/register src",
+    "build": "cross-env NODE_ENV=production tsup",
+    "start": "cross-env NODE_ENV=production node dist/index.js",
     "lint": "npx eslint . --ext .ts",
     "test:typecheck": "tsc --noEmit",
     "compose:dev:up": "docker compose -f docker/compose.dev.yml up -d",
@@ -15,7 +15,7 @@
     "compose:test:down": "docker compose -f docker/compose.test.yml down",
     "test": "cross-env NODE_ENV=test jest --clear-cache && jest --watch",
     "test:teardown": "docker-compose -f docker/compose.test.yml down -v",
-    "test:watch": "NODE_ENV=test jest --watch",
+    "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:cov": "cross-env NODE_ENV=test jest --coverage"
   },
   "keywords": [],

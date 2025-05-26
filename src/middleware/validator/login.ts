@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
-import { formatZodErrors } from './formatZodErrors';
+import { formatZodErrors, messages } from './helper';
 
 export const schema = z.object({
   identity: z
     .string()
-    .min(1, 'Identity is required')
+    .min(1, messages.identityRequired)
     .refine(
       (val) => /\S+@\S+\.\S+/.test(val) || /^[a-zA-Z0-9._]{3,}$/.test(val),
       {
-        message: 'Must be a valid email or username',
+        message: messages.identityInvalid,
       },
     ),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, messages.pwdLogin),
 });
 
 export type LoginInput = z.infer<typeof schema>;

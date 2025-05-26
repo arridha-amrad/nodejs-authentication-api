@@ -1,17 +1,16 @@
-import {
-  generateRandomBytes,
-  setExpiryDate,
-  getUserAgentAndIp,
-  emailToUsername,
-  getCookie,
-} from './utils'; // Adjust path
 import { Request } from 'express';
 import {
   COOKIE_GOOGLE_CODE_VERIFIER,
   COOKIE_REF_TOKEN,
   COOKIE_SIGNUP,
 } from './constants';
-import { z, ZodError } from 'zod';
+import {
+  emailToUsername,
+  generateRandomBytes,
+  getCookie,
+  getUserAgentAndIp,
+  setExpiryDate,
+} from './utils'; // Adjust path
 
 describe('Utils', () => {
   describe('generateRandomBytes', () => {

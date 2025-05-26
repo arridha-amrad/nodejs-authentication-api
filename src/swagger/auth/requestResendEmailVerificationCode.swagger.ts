@@ -1,29 +1,5 @@
 import { createMessageResponse, ServerErrorResponse } from '../helpers';
 
-const params = [
-  {
-    in: 'path',
-    name: 'token',
-    required: true,
-    schema: {
-      type: 'string',
-      example:
-        'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjY4MzA3ODc4NDk0ZGJmMTljMmI4YmU5NiIsImp3dFZlcnNpb24iOiJ5VjlDUiIsImlhdCI6MTc0ODAyNTA0MCwiZXhwIjoxNzQ4MDI1OTQwfQ.sNdJTipWmclxiw7bmogAdDiNY7X7BDM933G39zq1AZ8',
-    },
-    description: 'Token you get from email',
-  },
-  {
-    in: 'query',
-    name: 'email',
-    required: true,
-    schema: {
-      type: 'string',
-      example: 'john_doe@mail.com',
-    },
-    description: 'Email address',
-  },
-];
-
 const Successful = {
   description: 'Request is successful',
   content: {

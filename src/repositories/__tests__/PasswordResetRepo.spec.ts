@@ -35,7 +35,7 @@ describe('Password Reset Repository', () => {
     expect(result).toBeTruthy();
   });
 
-  it('should not create record with missing email', async () => {
+  it('should not create a record with missing email', async () => {
     await expect(PwdModel.create({ token: 'some-token' })).rejects.toThrow();
   });
 

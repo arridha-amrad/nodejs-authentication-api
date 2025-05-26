@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
-import { formatZodErrors } from './formatZodErrors';
+import { formatZodErrors } from './helper';
 
 export const messages = {
   pwdTooShort: 'Password must be at least 8 characters',

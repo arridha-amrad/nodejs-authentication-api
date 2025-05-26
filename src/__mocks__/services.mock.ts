@@ -49,7 +49,6 @@ export const mockRefTokenRepo: jest.Mocked<RefreshTokenRepository> = {
   deleteOne: jest.fn().mockResolvedValue(true),
   findOne: jest.fn(),
   create: jest.fn(),
-  updateOne: jest.fn(),
 };
 
 export const mockPwdResetRepo: jest.Mocked<PasswordResetRepository> = {
