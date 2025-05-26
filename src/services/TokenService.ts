@@ -1,6 +1,12 @@
 import { env } from '@/env';
 import crypto from 'crypto';
-import { errors as JoseErrors, JWTPayload, jwtVerify, SignJWT } from 'jose';
+import {
+  decodeJwt,
+  errors as JoseErrors,
+  JWTPayload,
+  jwtVerify,
+  SignJWT,
+} from 'jose';
 
 export type TokenPayload = JWTPayload & { id: string; jwtVersion: string };
 
@@ -13,6 +19,10 @@ export default class TokenService {
       .setIssuedAt()
       .setExpirationTime('15m')
       .sign(secret);
+  }
+
+  decodeAccessToken(token: string) {
+    return decodeJwt(token);
   }
 
   async verifyJwt(token: string) {

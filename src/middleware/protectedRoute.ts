@@ -1,5 +1,5 @@
+import AuthService from '@/services/AuthService';
 import TokenService, { TokenPayload } from '@/services/TokenService';
-import UserService from '@/services/UserService';
 import { NextFunction, Request, Response } from 'express';
 import { errors as JoseErrors } from 'jose';
 
@@ -10,7 +10,7 @@ export const protectedRoute = async (
 ) => {
   try {
     const tokenService = new TokenService();
-    const userService = new UserService();
+    const authService = new AuthService();
 
     const authHeader = req.headers['authorization'];
     if (!authHeader?.startsWith('Bearer ')) {
@@ -25,22 +25,23 @@ export const protectedRoute = async (
     }
 
     const payload = await tokenService.verifyJwt(token);
-    const { id, jwtVersion } = payload as TokenPayload;
+    const { id, jwtVersion, jti } = payload as TokenPayload;
 
-    if (!id || jwtVersion === undefined) {
+    if (!id || !jwtVersion || !jti) {
       res.status(401).json({ message: 'Invalid token payload' });
       return;
     }
 
-    const account = await userService.getOneUser({ jwtVersion, _id: id });
-    if (!account) {
-      res.status(401).json({ message: 'User not found' });
+    const hasBlackedList = await authService.hasTokenBlackListed(jti);
+    if (hasBlackedList) {
+      res.status(401).json({ message: 'Token has been black listed' });
       return;
     }
 
-    console.log(account);
-
-    req.user = account;
+    req.user = {
+      id,
+      jti,
+    };
     next();
   } catch (err) {
     if (err instanceof JoseErrors.JWTExpired) {

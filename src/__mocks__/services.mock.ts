@@ -1,3 +1,4 @@
+import ActiveTokenRepo from '@/repositories/ActiveTokenRepo';
 import PasswordResetRepository from '@/repositories/PasswordResetRepo';
 import RefreshTokenRepository from '@/repositories/RefreshTokenRepo';
 import UserRepository from '@/repositories/UserRepo';
@@ -28,6 +29,8 @@ export const mockAuthService: jest.Mocked<
   verifyVerificationCode: jest.fn(),
   getUserFromGithub: jest.fn(),
   getUserFromGoogle: jest.fn(),
+  blackListToken: jest.fn(),
+  hasTokenBlackListed: jest.fn(),
 };
 
 export const mockEmailService: jest.Mocked<Omit<EmailService, 'init'>> = {
@@ -43,6 +46,7 @@ export const mockTokenService: jest.Mocked<TokenService> = {
   }),
   verifyJwt: jest.fn(),
   createRandomBytes: jest.fn(),
+  decodeAccessToken: jest.fn(),
 };
 
 export const mockRefTokenRepo: jest.Mocked<RefreshTokenRepository> = {
@@ -88,4 +92,10 @@ export const mockUserService: jest.Mocked<
   updateUserPassword: jest.fn(),
   verifyNewUser: jest.fn(),
   setUserResponse: jest.fn(),
+};
+
+export const mockActiveTokenRepo: jest.Mocked<ActiveTokenRepo> = {
+  create: jest.fn(),
+  deleteOne: jest.fn(),
+  findOne: jest.fn(),
 };

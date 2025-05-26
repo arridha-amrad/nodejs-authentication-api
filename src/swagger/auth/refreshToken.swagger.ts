@@ -23,6 +23,7 @@ export const refreshTokenRoute = {
     get: {
       tags: ['Auth'],
       summary: 'Refresh access token',
+      security: [{ bearerAuth: [] }],
       responses: {
         200: RefreshTokenSuccessful,
         401: createMessageResponse(

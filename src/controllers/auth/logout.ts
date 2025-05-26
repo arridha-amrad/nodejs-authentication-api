@@ -15,6 +15,9 @@ export default async function logoutHandler(
       await authService.clearAuthSession(value);
       res.clearCookie(name, COOKIE_OPTIONS);
     }
+    if (req.user) {
+      await authService.blackListToken(req.user.jti);
+    }
     res.status(200).send('Logout');
     return;
   } catch (err) {

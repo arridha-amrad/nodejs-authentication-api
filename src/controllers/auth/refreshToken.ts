@@ -1,5 +1,6 @@
 import { COOKIE_OPTIONS } from '@/constants';
 import AuthService from '@/services/AuthService';
+import TokenService from '@/services/TokenService';
 import UserService from '@/services/UserService';
 import { getCookie, getUserAgentAndIp } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
@@ -12,8 +13,10 @@ export default async function refreshTokenHandler(
   try {
     const userService = new UserService();
     const authService = new AuthService();
+    const tokenService = new TokenService();
     const { ip, userAgent } = getUserAgentAndIp(req);
     const { name, value } = getCookie(req, 'refresh-token');
+
     if (!value || !name) {
       res.status(401).json({ message: 'Refresh token is missing' });
       return;
@@ -30,6 +33,15 @@ export default async function refreshTokenHandler(
       res.status(404).json({ message: 'User not found' });
       return;
     }
+
+    let oldJti: string | undefined;
+    if (req.headers.authorization) {
+      const { jti } = tokenService.decodeAccessToken(
+        req.headers.authorization.split('Bearer ')[1],
+      );
+      oldJti = jti;
+    }
+
     const { accessToken, rawRefreshToken } =
       await authService.generateAuthToken({
         jwtVersion: user.jwtVersion,
@@ -37,7 +49,9 @@ export default async function refreshTokenHandler(
         ip,
         userAgent,
         oldToken: storedToken.token,
+        oldJti,
       });
+
     res.cookie(name, rawRefreshToken, COOKIE_OPTIONS);
     res.status(200).json({ accessToken });
     return;

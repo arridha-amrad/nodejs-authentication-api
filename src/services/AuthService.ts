@@ -6,6 +6,8 @@ import { Types } from 'mongoose';
 import TokenService from './TokenService';
 import UserService from './UserService';
 import { GitHub, Google } from 'arctic';
+import { v4 } from 'uuid';
+import ActiveTokenRepo from '@/repositories/ActiveTokenRepo';
 
 type TGenAuthToken = {
   userId: Types.ObjectId;
@@ -13,6 +15,7 @@ type TGenAuthToken = {
   ip?: string;
   userAgent?: string;
   oldToken?: string;
+  oldJti?: string;
 };
 
 export default class AuthService {
@@ -22,6 +25,7 @@ export default class AuthService {
     private pwdResetRepo = new PasswordResetRepository(),
     private userService = new UserService(),
     private verificationCodeRepo = new VerificationCodeRepository(),
+    private activeTokenRepo = new ActiveTokenRepo(),
   ) {}
 
   async clearAuthSession(refreshToken: string) {
@@ -89,14 +93,20 @@ export default class AuthService {
   }
 
   async generateAuthToken(data: TGenAuthToken) {
-    const { jwtVersion, userId, ip, oldToken, userAgent } = data;
+    const { jwtVersion, userId, ip, oldToken, userAgent, oldJti } = data;
     if (oldToken) {
       await this.refTokenRepo.deleteOne(oldToken);
     }
+    if (oldJti) {
+      await this.blackListToken(oldJti);
+    }
+    const jti = v4();
     const accessToken = await this.tokenService.createJwt({
       id: userId.toString(),
       jwtVersion,
+      jti,
     });
+    await this.activeTokenRepo.create(userId.toString(), jti);
     const { hashedToken, rawToken } = await this.tokenService.createPairToken();
     await this.refTokenRepo.create({
       token: hashedToken,
@@ -109,6 +119,15 @@ export default class AuthService {
       rawRefreshToken: rawToken,
       accessToken,
     };
+  }
+
+  async hasTokenBlackListed(jti: string) {
+    const result = await this.activeTokenRepo.findOne({ jti });
+    return !result;
+  }
+
+  async blackListToken(jti: string) {
+    await this.activeTokenRepo.deleteOne(jti);
   }
 
   async getUserFromGithub(github: GitHub, code: string) {
