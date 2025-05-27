@@ -1,10 +1,11 @@
 import { ActiveToken, TActiveToken } from '@/models/ActiveTokenModel';
 
 export default class ActiveTokenRepo {
-  async create(userId: string, jti: string) {
+  async create(userId: string, jti: string, deviceId: string) {
     const newActiveToken = new ActiveToken({
       userId,
       jti,
+      deviceId
     });
     return newActiveToken.save();
   }
@@ -13,7 +14,7 @@ export default class ActiveTokenRepo {
     return ActiveToken.findOne(filter);
   }
 
-  async deleteOne(jti: string) {
-    return ActiveToken.findOneAndDelete({ jti });
+  async deleteOne(filter: Partial<TActiveToken>) {
+    return ActiveToken.deleteMany({ ...filter })
   }
 }

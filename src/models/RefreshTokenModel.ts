@@ -4,6 +4,7 @@ import mongoose, { InferSchemaType } from 'mongoose';
 export const RefreshTokenSchema = new mongoose.Schema({
   token: { type: String, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  deviceId: { type: String, required: true },
   expiresAt: {
     type: Date,
     default: () => setExpiryDate(7, 'days'),

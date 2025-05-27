@@ -34,14 +34,6 @@ export default async function refreshTokenHandler(
       return;
     }
 
-    let oldJti: string | undefined;
-    if (req.headers.authorization) {
-      const { jti } = tokenService.decodeAccessToken(
-        req.headers.authorization.split('Bearer ')[1],
-      );
-      oldJti = jti;
-    }
-
     const { accessToken, rawRefreshToken } =
       await authService.generateAuthToken({
         jwtVersion: user.jwtVersion,
@@ -49,7 +41,7 @@ export default async function refreshTokenHandler(
         ip,
         userAgent,
         oldToken: storedToken.token,
-        oldJti,
+        deviceId: storedToken.deviceId
       });
 
     res.cookie(name, rawRefreshToken, COOKIE_OPTIONS);

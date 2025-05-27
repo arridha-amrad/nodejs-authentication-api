@@ -2,7 +2,7 @@ import { RefreshToken, TRefreshToken } from '@/models/RefreshTokenModel';
 
 type TStoredRefToken = Pick<
   TRefreshToken,
-  'ip' | 'token' | 'userAgent' | 'userId'
+  'ip' | 'token' | 'userAgent' | 'userId' | 'deviceId'
 >;
 
 export default class RefreshTokenRepository {

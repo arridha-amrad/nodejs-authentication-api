@@ -1,13 +1,13 @@
 import { env } from '@/env';
+import ActiveTokenRepo from '@/repositories/ActiveTokenRepo';
 import PasswordResetRepository from '@/repositories/PasswordResetRepo';
 import RefreshTokenRepository from '@/repositories/RefreshTokenRepo';
 import VerificationCodeRepository from '@/repositories/VerificationCodeRepo';
+import { GitHub, Google } from 'arctic';
 import { Types } from 'mongoose';
+import { v4 } from 'uuid';
 import TokenService from './TokenService';
 import UserService from './UserService';
-import { GitHub, Google } from 'arctic';
-import { v4 } from 'uuid';
-import ActiveTokenRepo from '@/repositories/ActiveTokenRepo';
 
 type TGenAuthToken = {
   userId: Types.ObjectId;
@@ -15,7 +15,7 @@ type TGenAuthToken = {
   ip?: string;
   userAgent?: string;
   oldToken?: string;
-  oldJti?: string;
+  deviceId?: string
 };
 
 export default class AuthService {
@@ -26,7 +26,7 @@ export default class AuthService {
     private userService = new UserService(),
     private verificationCodeRepo = new VerificationCodeRepository(),
     private activeTokenRepo = new ActiveTokenRepo(),
-  ) {}
+  ) { }
 
   async clearAuthSession(refreshToken: string) {
     const hashedCrt = await this.tokenService.hashRandomBytes(refreshToken);
@@ -77,9 +77,8 @@ export default class AuthService {
   async generateLinkToken(email: string) {
     const { hashedToken, rawToken } = await this.tokenService.createPairToken();
     await this.pwdResetRepo.create(email, hashedToken);
-    return `${
-      env.CLIENT_BASE_URL
-    }/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    return `${env.CLIENT_BASE_URL
+      }/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
   }
 
   async getRefreshToken(rawToken: string, ip?: string, userAgent?: string) {
@@ -93,12 +92,16 @@ export default class AuthService {
   }
 
   async generateAuthToken(data: TGenAuthToken) {
-    const { jwtVersion, userId, ip, oldToken, userAgent, oldJti } = data;
+    const { jwtVersion, userId, ip, oldToken, userAgent, deviceId: currDeviceId } = data;
     if (oldToken) {
       await this.refTokenRepo.deleteOne(oldToken);
     }
-    if (oldJti) {
-      await this.blackListToken(oldJti);
+    let deviceId: string
+    if (currDeviceId) {
+      deviceId = currDeviceId
+      await this.activeTokenRepo.deleteOne({ deviceId })
+    } else {
+      deviceId = v4()
     }
     const jti = v4();
     const accessToken = await this.tokenService.createJwt({
@@ -106,13 +109,14 @@ export default class AuthService {
       jwtVersion,
       jti,
     });
-    await this.activeTokenRepo.create(userId.toString(), jti);
+    await this.activeTokenRepo.create(userId.toString(), jti, deviceId);
     const { hashedToken, rawToken } = await this.tokenService.createPairToken();
     await this.refTokenRepo.create({
       token: hashedToken,
       ip,
       userAgent,
       userId,
+      deviceId
     });
     return {
       hashedRefreshToken: hashedToken,
@@ -126,8 +130,8 @@ export default class AuthService {
     return !result;
   }
 
-  async blackListToken(jti: string) {
-    await this.activeTokenRepo.deleteOne(jti);
+  async blackListToken(deviceId: string) {
+    await this.activeTokenRepo.deleteOne({ deviceId });
   }
 
   async getUserFromGithub(github: GitHub, code: string) {

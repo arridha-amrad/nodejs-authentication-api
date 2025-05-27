@@ -26,7 +26,6 @@ export const protectedRoute = async (
 
     const payload = await tokenService.verifyJwt(token);
     const { id, jwtVersion, jti } = payload as TokenPayload;
-
     if (!id || !jwtVersion || !jti) {
       res.status(401).json({ message: 'Invalid token payload' });
       return;

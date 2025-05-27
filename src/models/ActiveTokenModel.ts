@@ -11,6 +11,7 @@ export const ActiveTokenSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  deviceId: { type: String, required: true },
   expiresAt: {
     type: Date,
     default: () => setExpiryDate(16, 'minutes'),
