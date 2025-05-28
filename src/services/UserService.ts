@@ -55,11 +55,9 @@ export default class UserService {
 
   async addNewUser(data: TCreateUser) {
     const { email, strategy, username, password } = data;
-
     const hashedPassword = password
       ? await this.passwordService.hash(password)
       : null;
-
     const newUser = await this.userRepo.create({
       username,
       email,
@@ -69,13 +67,11 @@ export default class UserService {
       isActive: strategy === 'default' ? false : true,
       isVerified: strategy === 'default' ? false : true,
     });
-
     let code = '';
     if (strategy === 'default') {
       const result = await this.vcRepo.create(newUser.id);
       code = result.code;
     }
-
     return { user: newUser, verificationCode: code };
   }
 

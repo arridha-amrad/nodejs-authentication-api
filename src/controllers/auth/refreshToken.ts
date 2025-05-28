@@ -1,8 +1,7 @@
 import { COOKIE_OPTIONS } from '@/constants';
 import AuthService from '@/services/AuthService';
-import TokenService from '@/services/TokenService';
 import UserService from '@/services/UserService';
-import { getCookie, getUserAgentAndIp } from '@/utils';
+import { getCookie } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 
 export default async function refreshTokenHandler(
@@ -13,19 +12,19 @@ export default async function refreshTokenHandler(
   try {
     const userService = new UserService();
     const authService = new AuthService();
-    const tokenService = new TokenService();
-    const { ip, userAgent } = getUserAgentAndIp(req);
-    const { name, value } = getCookie(req, 'refresh-token');
 
+    const { name, value } = getCookie(req, 'refresh-token');
     if (!value || !name) {
       res.status(401).json({ message: 'Refresh token is missing' });
       return;
     }
-    const storedToken = await authService.getRefreshToken(value, ip, userAgent);
+
+    const storedToken = await authService.getRefreshToken(value);
     if (!storedToken) {
       res.status(404).json({ message: 'Token not found' });
       return;
     }
+
     const user = await userService.getOneUser({
       _id: storedToken.userId.toString(),
     });
@@ -38,10 +37,8 @@ export default async function refreshTokenHandler(
       await authService.generateAuthToken({
         jwtVersion: user.jwtVersion,
         userId: user._id,
-        ip,
-        userAgent,
         oldToken: storedToken.token,
-        deviceId: storedToken.deviceId
+        deviceId: storedToken.deviceId,
       });
 
     res.cookie(name, rawRefreshToken, COOKIE_OPTIONS);

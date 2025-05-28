@@ -8,11 +8,9 @@ export default class PasswordResetRepository {
     });
     return pt.save();
   }
-
   async findOne(filter: Partial<TPasswordReset>) {
     return PasswordReset.findOne(filter);
   }
-
   async deleteOne(id: string) {
     return PasswordReset.findByIdAndDelete(id);
   }

@@ -7,7 +7,7 @@ export const connectToMongoDb = async (uri: string) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error('❌ MongoDB connection error:', err.message);
+      console.error('MongoDB connection error:', err.message);
     }
     process.exit(1); // Exit on failure
   }

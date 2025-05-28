@@ -1,16 +1,14 @@
 import { connectToMongoDb } from '@/database/db.mongo';
 import mongoose from 'mongoose';
 
-jest.mock('mongoose');
-
-describe('connectToMongoDb', () => {
-  const mockedConnect = mongoose.connect as jest.Mock;
+describe('MongoDb connection', () => {
   const originalExit = process.exit;
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+  afterEach(async () => {
+    await mongoose.disconnect();
+  });
 
-    // 👇 Properly override process.exit without type conflict
+  beforeEach(() => {
     Object.defineProperty(process, 'exit', {
       value: jest.fn() as unknown as typeof process.exit,
       writable: true,
@@ -18,40 +16,29 @@ describe('connectToMongoDb', () => {
   });
 
   afterAll(() => {
-    // ✅ Restore original process.exit
     Object.defineProperty(process, 'exit', {
       value: originalExit,
       writable: true,
     });
   });
 
-  it('should connect successfully to MongoDB', async () => {
-    // eslint-disable-next-line
-    mockedConnect.mockResolvedValueOnce({} as any);
-    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-    await connectToMongoDb('mongodb://fake-uri');
-
-    expect(mockedConnect).toHaveBeenCalledWith('mongodb://fake-uri', {
-      serverSelectionTimeoutMS: 5000,
-    });
-    logSpy.mockRestore();
+  it('should connect to mongodb successfully', async () => {
+    const uri = process.env.DB_URI;
+    await connectToMongoDb(uri);
+    expect(uri).toBeTruthy();
+    expect(mongoose.connection.readyState).toBe(1);
   });
 
-  it('should handle connection error and call process.exit', async () => {
-    mockedConnect.mockRejectedValueOnce(new Error('connection failed'));
+  it('should not connect to mongodb and exit', async () => {
+    const uri = 'invalid uri';
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-    await connectToMongoDb('mongodb://invalid-uri');
-
+    await connectToMongoDb(uri);
+    expect(mongoose.connection.readyState).toBe(0);
     expect(errorSpy).toHaveBeenCalledWith(
-      '❌ MongoDB connection error:',
-      'connection failed',
+      'MongoDB connection error:',
+      expect.any(String),
     );
-
-    // 👇 Assert that process.exit was called with 1
     expect(process.exit).toHaveBeenCalledWith(1);
-
     errorSpy.mockRestore();
   });
 });

@@ -38,13 +38,17 @@ describe('logout controller', () => {
     jest.clearAllMocks();
   });
   describe('Positive test', () => {
-    it('should logout the user gracefully', async () => {
+    it('should response with 200', async () => {
       mockGetCookie.mockReturnValue({
         name: 'cookie-refresh-token',
         value: 'raw-refresh-token',
       });
+      mockAuthService.clearAuthSession.mockResolvedValue(true as any);
+      mockAuthService.getRefreshToken.mockResolvedValue({
+        deviceId: 'deviceId',
+      } as any);
+      mockAuthService.blackListToken.mockResolvedValue(true as any);
       await logoutHandler(mockRequest as any, mockResponse as any, mockNext);
-      expect(mockAuthService.clearAuthSession).toHaveBeenCalledTimes(1);
       expect(mockResponse.clearCookie).toHaveBeenCalledWith(
         'cookie-refresh-token',
         COOKIE_OPTIONS,
@@ -52,9 +56,7 @@ describe('logout controller', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.send).toHaveBeenCalledWith('Logout');
     });
-  });
-  describe('Negative test', () => {
-    it('should skip to clear cookie of refresh-token', async () => {
+    it('should response with 200 even though cookie refresh token is missing', async () => {
       mockGetCookie.mockReturnValue({
         name: undefined,
         value: undefined,
@@ -62,20 +64,12 @@ describe('logout controller', () => {
       await logoutHandler(mockRequest as any, mockResponse as any, mockNext);
       expect(mockAuthService.clearAuthSession).not.toHaveBeenCalled();
       expect(mockResponse.clearCookie).not.toHaveBeenCalled();
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(mockResponse.send).toHaveBeenCalledWith(expect.any(String));
     });
-    it('should clear the cookie of refresh-token', async () => {
-      mockGetCookie.mockReturnValue({
-        name: 'cookie-refresh-token',
-        value: 'raw-refresh-token',
-      });
-      await logoutHandler(mockRequest as any, mockResponse as any, mockNext);
-      expect(mockAuthService.clearAuthSession).toHaveBeenCalledTimes(1);
-      expect(mockResponse.clearCookie).toHaveBeenCalledWith(
-        'cookie-refresh-token',
-        COOKIE_OPTIONS,
-      );
-    });
-    it('should catch error when async function fails', async () => {
+  });
+  describe('Negative test', () => {
+    it('should catch error when any async function fails', async () => {
       mockGetCookie.mockReturnValue({
         name: 'cookie-refresh-token',
         value: 'raw-refresh-token',

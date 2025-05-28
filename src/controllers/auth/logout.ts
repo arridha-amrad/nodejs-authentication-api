@@ -1,6 +1,6 @@
 import { COOKIE_OPTIONS } from '@/constants';
 import AuthService from '@/services/AuthService';
-import { getCookie, getUserAgentAndIp } from '@/utils';
+import { getCookie } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 
 export default async function logoutHandler(
@@ -10,13 +10,12 @@ export default async function logoutHandler(
 ) {
   try {
     const authService = new AuthService();
-    const { ip, userAgent } = getUserAgentAndIp(req)
     const { name, value } = getCookie(req, 'refresh-token');
     if (name && value) {
       await authService.clearAuthSession(value);
-      const storedToken = await authService.getRefreshToken(value, ip, userAgent)
+      const storedToken = await authService.getRefreshToken(value);
       if (storedToken?.deviceId) {
-        await authService.blackListToken(storedToken.deviceId)
+        await authService.blackListToken(storedToken.deviceId);
       }
       res.clearCookie(name, COOKIE_OPTIONS);
     }

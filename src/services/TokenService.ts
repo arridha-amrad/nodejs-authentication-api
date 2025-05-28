@@ -31,7 +31,7 @@ export default class TokenService {
       return payload;
     } catch (err) {
       if (err instanceof JoseErrors.JWTExpired) {
-        throw new Error('Token expired');
+        throw err;
       }
       throw new Error('Invalid token');
     }

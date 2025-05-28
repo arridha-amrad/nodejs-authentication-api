@@ -1,5 +1,11 @@
 import { Request, Response } from 'express';
 import getAuthUser from '../getAuthUser';
+import { mockUserService } from '@/__mocks__/services.mock';
+
+jest.mock('@/services/UserService', () => ({
+  __esModule: true,
+  default: jest.fn(() => mockUserService),
+}));
 
 describe('Get Auth User Controller', () => {
   let mockReq: Partial<Request>;
@@ -15,9 +21,9 @@ describe('Get Auth User Controller', () => {
   });
 
   describe('negative test', () => {
-    it('should response with status 404 because no user attached to req.user', async () => {
+    it('should response with status 404 because no userId and jti attached to req.user', async () => {
       await getAuthUser(mockReq as any, mockRes as any);
-      expect(mockRes.status).toHaveBeenCalledWith(404);
+      expect(mockRes.status).toHaveBeenCalledWith(401);
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
       });
@@ -26,16 +32,27 @@ describe('Get Auth User Controller', () => {
   describe('positive test', () => {
     it('should response with status 200 and json containing user', async () => {
       const user = {
-        _id: 'userId',
-        email: 'email',
+        id: 'userId',
+        jti: 'jti',
       };
       mockReq = {
         user: user as any,
       };
+      mockUserService.getOneUser.mockResolvedValue({
+        _id: 'userId',
+        email: 'user@mail.com',
+      } as any);
+      mockUserService.setUserResponse.mockReturnValue({
+        _id: 'userId',
+        email: 'user@mail.com',
+      } as any);
       await getAuthUser(mockReq as any, mockRes as any);
       expect(mockRes.status).toHaveBeenCalledWith(200);
       expect(mockRes.json).toHaveBeenCalledWith({
-        user,
+        user: {
+          _id: 'userId',
+          email: 'user@mail.com',
+        },
       });
     });
   });

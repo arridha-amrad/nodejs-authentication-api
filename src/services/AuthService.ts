@@ -12,10 +12,8 @@ import UserService from './UserService';
 type TGenAuthToken = {
   userId: Types.ObjectId;
   jwtVersion: string;
-  ip?: string;
-  userAgent?: string;
   oldToken?: string;
-  deviceId?: string
+  deviceId?: string;
 };
 
 export default class AuthService {
@@ -26,23 +24,20 @@ export default class AuthService {
     private userService = new UserService(),
     private verificationCodeRepo = new VerificationCodeRepository(),
     private activeTokenRepo = new ActiveTokenRepo(),
-  ) { }
+  ) {}
 
   async clearAuthSession(refreshToken: string) {
     const hashedCrt = await this.tokenService.hashRandomBytes(refreshToken);
     await this.refTokenRepo.deleteOne(hashedCrt);
   }
-
   async getPasswordResetData(token: string, email: string) {
     const hashedToken = await this.tokenService.hashRandomBytes(token);
-
     const storedPwdResetData = await this.pwdResetRepo.findOne({
       token: hashedToken,
       email,
     });
     return storedPwdResetData;
   }
-
   async verifyVerificationCode(userId: string, code: string) {
     const vCode = await this.verificationCodeRepo.updateOne(
       {
@@ -56,7 +51,6 @@ export default class AuthService {
     );
     return vCode;
   }
-
   async resetUserPassword(
     userId: string,
     password: string,
@@ -67,41 +61,37 @@ export default class AuthService {
       await this.pwdResetRepo.deleteOne(pwdResetId);
     }
   }
-
   async regenerateVerificationCode(userId: string) {
     await this.verificationCodeRepo.deleteMany(userId);
     const newVerificationCode = await this.verificationCodeRepo.create(userId);
     return newVerificationCode;
   }
-
   async generateLinkToken(email: string) {
     const { hashedToken, rawToken } = await this.tokenService.createPairToken();
     await this.pwdResetRepo.create(email, hashedToken);
-    return `${env.CLIENT_BASE_URL
-      }/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    return `${
+      env.CLIENT_BASE_URL
+    }/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
   }
-
-  async getRefreshToken(rawToken: string, ip?: string, userAgent?: string) {
+  async getRefreshToken(rawToken: string) {
     const hashedToken = await this.tokenService.hashRandomBytes(rawToken);
     const storedToken = await this.refTokenRepo.findOne({
-      ip,
-      userAgent,
       token: hashedToken,
     });
     return storedToken;
   }
 
   async generateAuthToken(data: TGenAuthToken) {
-    const { jwtVersion, userId, ip, oldToken, userAgent, deviceId: currDeviceId } = data;
+    const { jwtVersion, userId, oldToken, deviceId: currDeviceId } = data;
     if (oldToken) {
       await this.refTokenRepo.deleteOne(oldToken);
     }
-    let deviceId: string
+    let deviceId: string;
     if (currDeviceId) {
-      deviceId = currDeviceId
-      await this.activeTokenRepo.deleteOne({ deviceId })
+      deviceId = currDeviceId;
+      await this.activeTokenRepo.deleteOne({ deviceId });
     } else {
-      deviceId = v4()
+      deviceId = v4();
     }
     const jti = v4();
     const accessToken = await this.tokenService.createJwt({
@@ -113,10 +103,8 @@ export default class AuthService {
     const { hashedToken, rawToken } = await this.tokenService.createPairToken();
     await this.refTokenRepo.create({
       token: hashedToken,
-      ip,
-      userAgent,
       userId,
-      deviceId
+      deviceId,
     });
     return {
       hashedRefreshToken: hashedToken,
@@ -129,11 +117,9 @@ export default class AuthService {
     const result = await this.activeTokenRepo.findOne({ jti });
     return !result;
   }
-
   async blackListToken(deviceId: string) {
     await this.activeTokenRepo.deleteOne({ deviceId });
   }
-
   async getUserFromGithub(github: GitHub, code: string) {
     const tokens = await github.validateAuthorizationCode(code);
     const accessToken = tokens.accessToken();
@@ -145,7 +131,6 @@ export default class AuthService {
     const user = (await response.json()) as { email: string };
     return user;
   }
-
   async getUserFromGoogle(google: Google, code: string, codeVerifier: string) {
     const tokens = await google.validateAuthorizationCode(code, codeVerifier);
     const accessToken = tokens.accessToken();

@@ -12,17 +12,15 @@ export const PasswordResetSchema = new mongoose.Schema({
   },
   expiresAt: {
     type: Date,
-    default: () => setExpiryDate(1, 'hours'), // 7 days
-    index: { expires: 0 }, // auto-delete after `expiresAt`
+    default: () => setExpiryDate(1, 'hours'),
+    index: { expires: 0 },
   },
   createdAt: { type: Date, default: Date.now },
 });
-
 export const PasswordReset = mongoose.model(
   'PasswordReset',
   PasswordResetSchema,
 );
-
 export type TPasswordReset = InferSchemaType<typeof PasswordResetSchema> & {
   _id: unknown;
 };

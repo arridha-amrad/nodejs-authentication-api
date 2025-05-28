@@ -12,17 +12,13 @@ export default async function forgotPasswordHandler(
     const userService = new UserService();
     const emailService = new EmailService();
     const authService = new AuthService();
-
     const { email } = req.body;
-
     const account = await userService.getOneUser({ email });
     if (!account || (account && !account.isVerified)) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
-
     const link = await authService.generateLinkToken(email);
-
     await emailService.send({
       to: email,
       subject: 'Reset Password Request',
@@ -37,11 +33,9 @@ export default async function forgotPasswordHandler(
 
       `,
     });
-
     res.status(200).json({
       message: `An email has been sent to ${email}. Please follow the instructions to reset your password.`,
     });
-
     return;
   } catch (err) {
     next(err);

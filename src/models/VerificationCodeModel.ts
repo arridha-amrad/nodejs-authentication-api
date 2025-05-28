@@ -23,15 +23,12 @@ const VerificationCodeSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-
 export const VerificationCode = mongoose.model(
   'VerificationCode',
   VerificationCodeSchema,
 );
-
 export type TTVerificationCode = Omit<
   InferSchemaType<typeof VerificationCodeSchema>,
   'userId'
 >;
-
 export type TVerificationCode = TTVerificationCode & { userId: string };

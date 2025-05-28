@@ -5,16 +5,14 @@ export default class ActiveTokenRepo {
     const newActiveToken = new ActiveToken({
       userId,
       jti,
-      deviceId
+      deviceId,
     });
     return newActiveToken.save();
   }
-
   async findOne(filter: Partial<TActiveToken>) {
     return ActiveToken.findOne(filter);
   }
-
   async deleteOne(filter: Partial<TActiveToken>) {
-    return ActiveToken.deleteMany({ ...filter })
+    return ActiveToken.deleteMany({ ...filter });
   }
 }

@@ -1,4 +1,8 @@
-import { mockTokenService, mockUserService } from '@/__mocks__/services.mock';
+import {
+  mockAuthService,
+  mockTokenService,
+  mockUserService,
+} from '@/__mocks__/services.mock';
 import { NextFunction, Request, Response } from 'express';
 import { protectedRoute } from '../protectedRoute';
 import { errors as JoseErrors } from 'jose';
@@ -8,10 +12,13 @@ jest.mock('@/services/TokenService', () => ({
   __esModule: true,
   default: jest.fn(() => mockTokenService),
 }));
-
 jest.mock('@/services/UserService', () => ({
   __esModule: true,
   default: jest.fn(() => mockUserService),
+}));
+jest.mock('@/services/AuthService', () => ({
+  __esModule: true,
+  default: jest.fn(() => mockAuthService),
 }));
 
 describe('protectedRoute middleware', () => {
@@ -46,16 +53,14 @@ describe('protectedRoute middleware', () => {
           authorization: 'Bearer validToken',
         },
       };
-      const payload = { id: '123', jwtVersion: 1 };
-      const mockUser = { _id: '123', name: 'Test User', jwtVersion: 1 };
+      const payload = { id: '123', jwtVersion: 1, jti: 'jti-123' };
       mockTokenService.verifyJwt.mockResolvedValue(payload);
-      mockUserService.getOneUser.mockResolvedValue(mockUser as any);
+      mockAuthService.hasTokenBlackListed.mockResolvedValue(false);
       await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
-      expect(mockUserService.getOneUser).toHaveBeenCalledWith({
-        _id: '123',
-        jwtVersion: 1,
+      expect(mockRequest.user).toEqual({
+        id: '123',
+        jti: 'jti-123',
       });
-      expect(mockRequest.user).toEqual(mockUser);
       expect(mockNext).toHaveBeenCalled();
       expect(jsonMock).not.toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
@@ -67,35 +72,45 @@ describe('protectedRoute middleware', () => {
       await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
       expect(mockResponse.status).toHaveBeenCalledWith(401);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: 'Missing or invalid token',
+        message: expect.any(String),
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
-    it('should return 401 if authorization header does not start with Bearer', async () => {
-      mockRequest = {
-        headers: {
-          authorization: 'token',
-        },
-      };
-      await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
-      expect(mockResponse.status).toHaveBeenCalledWith(401);
-      expect(jsonMock).toHaveBeenCalledWith({
-        message: 'Missing or invalid token',
+
+    it('should return 401 if authorization header is not bearer token format', async () => {
+      const wrongFormat = ['token', 'Bearer'];
+      wrongFormat.forEach(async (v) => {
+        mockRequest = {
+          headers: {
+            authorization: v,
+          },
+        };
+        await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
+        expect(mockResponse.status).toHaveBeenCalledWith(401);
+        expect(jsonMock).toHaveBeenCalledWith({
+          message: expect.any(String),
+        });
+        expect(mockNext).not.toHaveBeenCalled();
       });
-      expect(mockNext).not.toHaveBeenCalled();
     });
-    it('should return 401 if token is missing after Bearer', async () => {
+
+    it('should return 401 if token verification fails and throw JoseErrors.JWTExpired', async () => {
       mockRequest = {
         headers: {
-          authorization: 'Bearer ',
+          authorization: 'Bearer expiredToken',
         },
       };
+      mockTokenService.verifyJwt.mockRejectedValue(
+        new JoseErrors.JWTExpired('', {}),
+      );
       await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
+      expect(mockTokenService.verifyJwt).toHaveBeenCalledWith('expiredToken');
       expect(mockResponse.status).toHaveBeenCalledWith(401);
-      expect(jsonMock).toHaveBeenCalledWith({ message: 'Unauthorized' });
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Token expired' });
       expect(mockNext).not.toHaveBeenCalled();
     });
-    it('should return 401 if token verification fails', async () => {
+
+    it('should return 401 if token verification fails and throw Error', async () => {
       mockRequest = {
         headers: {
           authorization: 'Bearer invalidToken',
@@ -108,6 +123,7 @@ describe('protectedRoute middleware', () => {
       expect(jsonMock).toHaveBeenCalledWith({ message: 'Unauthorized' });
       expect(mockNext).not.toHaveBeenCalled();
     });
+
     it('should return 401 if token payload is invalid', async () => {
       mockRequest = {
         headers: {
@@ -118,55 +134,28 @@ describe('protectedRoute middleware', () => {
       await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
       expect(mockResponse.status).toHaveBeenCalledWith(401);
       expect(jsonMock).toHaveBeenCalledWith({
-        message: 'Invalid token payload',
+        message: 'Unauthorized',
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
-    it('should return 401 if user is not found', async () => {
-      mockRequest = {
-        headers: {
-          authorization: 'Bearer validToken',
-        },
-      };
-      const payload = { id: '123', jwtVersion: 1 };
-      mockTokenService.verifyJwt.mockResolvedValue(payload);
-      mockUserService.getOneUser.mockResolvedValue(null);
-      await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
-      expect(mockUserService.getOneUser).toHaveBeenCalledWith({
-        _id: '123',
-        jwtVersion: 1,
-      });
-      expect(mockResponse.status).toHaveBeenCalledWith(401);
-      expect(jsonMock).toHaveBeenCalledWith({ message: 'User not found' });
-      expect(mockNext).not.toHaveBeenCalled();
-    });
+
     it('should return 401 for any unexpected error', async () => {
       mockRequest = {
         headers: {
           authorization: 'Bearer validToken',
         },
       };
-
-      mockTokenService.verifyJwt.mockRejectedValue(
-        new Error('Unexpected error'),
+      mockTokenService.verifyJwt.mockResolvedValue({
+        id: 'id',
+        jwtVersion: 'jwtVersion',
+        jti: 'jti',
+      });
+      mockAuthService.hasTokenBlackListed.mockRejectedValue(
+        new Error('something went wrong'),
       );
       await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
       expect(statusMock).toHaveBeenCalledWith(401);
       expect(jsonMock).toHaveBeenCalledWith({ message: 'Unauthorized' });
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-    it('should return 401 when token expired', async () => {
-      mockRequest = {
-        headers: {
-          authorization: 'Bearer validToken',
-        },
-      };
-      mockTokenService.verifyJwt.mockRejectedValue(
-        new JoseErrors.JWTExpired('Token expired', {} as any),
-      );
-      await protectedRoute(mockRequest as any, mockResponse as any, mockNext);
-      expect(statusMock).toHaveBeenCalledWith(401);
-      expect(jsonMock).toHaveBeenCalledWith({ message: 'Token expired' });
       expect(mockNext).not.toHaveBeenCalled();
     });
   });

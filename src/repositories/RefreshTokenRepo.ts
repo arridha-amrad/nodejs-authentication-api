@@ -1,9 +1,6 @@
 import { RefreshToken, TRefreshToken } from '@/models/RefreshTokenModel';
 
-type TStoredRefToken = Pick<
-  TRefreshToken,
-  'ip' | 'token' | 'userAgent' | 'userId' | 'deviceId'
->;
+type TStoredRefToken = Pick<TRefreshToken, 'token' | 'userId' | 'deviceId'>;
 
 export default class RefreshTokenRepository {
   async create(data: TStoredRefToken) {

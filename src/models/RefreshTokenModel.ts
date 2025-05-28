@@ -11,12 +11,8 @@ export const RefreshTokenSchema = new mongoose.Schema({
     index: { expires: 0 },
   },
   createdAt: { type: Date, default: Date.now },
-  ip: String,
-  userAgent: String,
 });
-
 export const RefreshToken = mongoose.model('RefreshToken', RefreshTokenSchema);
-
 export type TRefreshToken = InferSchemaType<typeof RefreshTokenSchema> & {
   _id: unknown;
 };

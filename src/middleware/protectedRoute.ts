@@ -11,32 +11,23 @@ export const protectedRoute = async (
   try {
     const tokenService = new TokenService();
     const authService = new AuthService();
-
     const authHeader = req.headers['authorization'];
     if (!authHeader?.startsWith('Bearer ')) {
-      res.status(401).json({ message: 'Missing or invalid token' });
-      return;
+      throw new Error();
     }
-
     const token = authHeader.split(' ')[1];
     if (!token) {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
+      throw new Error();
     }
-
     const payload = await tokenService.verifyJwt(token);
     const { id, jwtVersion, jti } = payload as TokenPayload;
     if (!id || !jwtVersion || !jti) {
-      res.status(401).json({ message: 'Invalid token payload' });
-      return;
+      throw new Error();
     }
-
     const hasBlackedList = await authService.hasTokenBlackListed(jti);
     if (hasBlackedList) {
-      res.status(401).json({ message: 'Token has been black listed' });
-      return;
+      throw new Error();
     }
-
     req.user = {
       id,
       jti,

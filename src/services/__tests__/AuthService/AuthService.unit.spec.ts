@@ -1,4 +1,5 @@
 import {
+  mockActiveTokenRepo,
   mockPwdResetRepo,
   mockRefTokenRepo,
   mockTokenService,
@@ -11,11 +12,9 @@ import { Types } from 'mongoose';
 jest.mock('@/services/TokenService', () => ({
   default: jest.fn(() => mockTokenService),
 }));
-
 jest.mock('@/repositories/RefreshTokenRepo', () => ({
   default: jest.fn(() => mockRefTokenRepo),
 }));
-
 jest.mock('@/repositories/PasswordResetRepo', () => ({
   default: jest.fn(() => mockPwdResetRepo),
 }));
@@ -188,32 +187,26 @@ describe('AuthService (Unit)', () => {
   describe('getRefreshToken', () => {
     it('should return storedToken', async () => {
       const rawToken = 'raw-token';
-      const ip = 'ip';
-      const userAgent = 'user-agent';
       mockTokenService.hashRandomBytes.mockResolvedValue('hashed-token');
       mockRefTokenRepo.findOne.mockResolvedValue({
         token: 'hashed-token',
-        ip,
-        userAgent,
       } as any);
-      const result = await authService.getRefreshToken(rawToken, ip, userAgent);
+      const result = await authService.getRefreshToken(rawToken);
       expect(result).toBeTruthy();
       expect(result?.token).toBe('hashed-token');
-      expect(result?.ip).toBe(ip);
-      expect(result?.userAgent).toBe(userAgent);
     });
     it('should return null if token not found', async () => {
       const rawToken = 'raw-token';
-      const ip = 'ip';
-      const userAgent = 'user-agent';
       mockTokenService.hashRandomBytes.mockResolvedValue('hashed-token');
       mockRefTokenRepo.findOne.mockResolvedValue(null);
-      const result = await authService.getRefreshToken(rawToken, ip, userAgent);
+      const result = await authService.getRefreshToken(rawToken);
       expect(result).toBeNull();
     });
   });
 
   describe('generateAuthToken', () => {
+    describe('login/emailVerification scenario. old token and deviceId not provided in param', () => {});
+    describe('refreshToken scenario. oldToken and deviceId provided in param', () => {});
     it('should not delete any token from db cause old token is missing', async () => {
       const data = {
         jwtVersion: 'jwtVersion',
@@ -226,13 +219,23 @@ describe('AuthService (Unit)', () => {
       expect(mockRefTokenRepo.deleteOne).not.toHaveBeenCalled();
     });
 
+    it('should delete old active token when deviceId is provided', async () => {
+      await authService.generateAuthToken({
+        jwtVersion: 'jwt-version',
+        userId: new Types.ObjectId(),
+        oldToken: 'oldRefreshToken',
+        deviceId: 'deviceId',
+      });
+      expect(mockActiveTokenRepo.deleteOne).toHaveBeenCalledWith({
+        deviceId: 'deviceId',
+      });
+    });
+
     it('should return rawToken, hashedToken, and accessToken', async () => {
       const data = {
         jwtVersion: 'jwtVersion',
         userId: 'userId',
         oldToken: 'oldToken',
-        ip: 'ip',
-        userAgent: 'userAgent',
       };
       mockRefTokenRepo.deleteOne.mockResolvedValue(true as any);
       mockTokenService.createJwt.mockResolvedValue('accessToken');
@@ -244,8 +247,6 @@ describe('AuthService (Unit)', () => {
       const result = await authService.generateAuthToken({
         jwtVersion: data.jwtVersion,
         userId: new Types.ObjectId(),
-        ip: data.ip,
-        userAgent: data.userAgent,
         oldToken: data.oldToken,
       });
       expect(result).toBeTruthy();

@@ -14,18 +14,15 @@ export default async function signupHandler(
   try {
     const userService = new UserService();
     const emailService = new EmailService();
-
     const result = await userService.checkEmailAndUsernameUniqueness(
       email,
       username,
     );
-
     if (typeof result !== 'undefined') {
       const { constraint } = result;
       res.status(403).json({ message: `${constraint} has been taken` });
       return;
     }
-
     const {
       verificationCode,
       user: { id: userId },
@@ -35,7 +32,6 @@ export default async function signupHandler(
       password,
       strategy: 'default',
     });
-
     await emailService.send({
       to: email,
       subject: 'New account verification',
@@ -46,13 +42,10 @@ export default async function signupHandler(
       </p> <p>Thanks</p>
       `,
     });
-
     res.cookie(COOKIE_SIGNUP, userId, COOKIE_OPTIONS);
-
     res.status(201).json({
       message: `An email has been sent to ${email}, please follow the instruction to verify your account.`,
     });
-
     return;
   } catch (err) {
     next(err);
