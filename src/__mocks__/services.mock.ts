@@ -65,12 +65,12 @@ export const mockPwdResetRepo: jest.Mocked<PasswordResetRepository> = {
 };
 
 export const mockVerificationCodeRepo: jest.Mocked<VerificationCodeRepository> =
-  {
-    create: jest.fn(),
-    deleteMany: jest.fn(),
-    findOne: jest.fn(),
-    updateOne: jest.fn(),
-  };
+{
+  create: jest.fn(),
+  deleteMany: jest.fn(),
+  findOne: jest.fn(),
+  updateOne: jest.fn(),
+};
 
 export const mockUserRepo: jest.Mocked<UserRepository> = {
   create: jest.fn(),
@@ -96,6 +96,6 @@ export const mockUserService: jest.Mocked<
 
 export const mockActiveTokenRepo: jest.Mocked<ActiveTokenRepo> = {
   create: jest.fn(),
-  deleteOne: jest.fn(),
+  deleteMany: jest.fn(),
   findOne: jest.fn(),
 };

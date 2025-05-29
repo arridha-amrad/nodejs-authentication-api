@@ -14,9 +14,11 @@ export default class VerificationCodeRepository {
     });
     return vc.save();
   }
+
   async findOne(filter: Partial<TVerificationCode>) {
     return VerificationCode.findOne(filter);
   }
+
   async updateOne(
     filter: Partial<TVerificationCode>,
     data: Partial<TVerificationCode>,
@@ -30,6 +32,7 @@ export default class VerificationCodeRepository {
       },
     );
   }
+
   // eslint-disable-next-line
   async deleteMany(userId: string): Promise<Query<any, any>> {
     return VerificationCode.deleteMany({ userId });

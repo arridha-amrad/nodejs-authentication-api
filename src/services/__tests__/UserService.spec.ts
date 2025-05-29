@@ -2,7 +2,7 @@ import { JWT_VERSION_LENGTH } from '@/constants';
 import { TUser as User, UserSchema as userSchema } from '@/models/UserModel';
 import { generateRandomBytes } from '@/utils';
 import mongoose, { Model, model } from 'mongoose';
-import UserService, { TCreateUser } from '../../UserService';
+import UserService, { TCreateUser } from '../UserService';
 
 let UserModel: Model<User>;
 let userService: UserService;

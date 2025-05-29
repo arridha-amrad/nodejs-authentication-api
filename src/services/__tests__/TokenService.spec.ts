@@ -25,6 +25,13 @@ describe('TokenService', () => {
     expect(verified).toMatchObject(data);
   });
 
+  it("should decode the token", async () => {
+    const data = { id: '123', jwtVersion: '1', jti: 'jti' };
+    const token = await service.createJwt(data)
+    const payload = service.decodeAccessToken(token)
+    expect(payload).toMatchObject(data)
+  })
+
   it('should throw an error for expired JWT', async () => {
     const expiredToken = await new TokenService().createJwt({
       id: '123',
@@ -36,6 +43,10 @@ describe('TokenService', () => {
       errors.JWTExpired,
     );
   });
+
+  it("should throw an error for invalid token", async () => {
+    await expect(service.verifyJwt("token")).rejects.toThrow("Invalid token")
+  })
 
   it('should generate random bytes and hash correctly', async () => {
     const raw = await service.createRandomBytes(32);

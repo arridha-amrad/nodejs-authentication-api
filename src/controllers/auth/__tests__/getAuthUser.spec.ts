@@ -21,13 +21,28 @@ describe('Get Auth User Controller', () => {
   });
 
   describe('negative test', () => {
-    it('should response with status 404 because no userId and jti attached to req.user', async () => {
+    it('should response with status 401 because no userId and jti attached to req.user', async () => {
       await getAuthUser(mockReq as any, mockRes as any);
       expect(mockRes.status).toHaveBeenCalledWith(401);
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
       });
     });
+    it("should response with status 404 because no user found", async () => {
+      const payload = {
+        id: 'userId',
+        jti: 'jti',
+      };
+      mockReq = {
+        user: payload,
+      };
+      mockUserService.getOneUser.mockResolvedValue(null)
+      await getAuthUser(mockReq as any, mockRes as any);
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String)
+      })
+    })
   });
   describe('positive test', () => {
     it('should response with status 200 and json containing user', async () => {

@@ -12,7 +12,7 @@ export default class ActiveTokenRepo {
   async findOne(filter: Partial<TActiveToken>) {
     return ActiveToken.findOne(filter);
   }
-  async deleteOne(filter: Partial<TActiveToken>) {
+  async deleteMany(filter: Partial<TActiveToken>) {
     return ActiveToken.deleteMany({ ...filter });
   }
 }

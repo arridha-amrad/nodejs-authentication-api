@@ -24,7 +24,7 @@ export default class AuthService {
     private userService = new UserService(),
     private verificationCodeRepo = new VerificationCodeRepository(),
     private activeTokenRepo = new ActiveTokenRepo(),
-  ) {}
+  ) { }
 
   async clearAuthSession(refreshToken: string) {
     const hashedCrt = await this.tokenService.hashRandomBytes(refreshToken);
@@ -69,9 +69,8 @@ export default class AuthService {
   async generateLinkToken(email: string) {
     const { hashedToken, rawToken } = await this.tokenService.createPairToken();
     await this.pwdResetRepo.create(email, hashedToken);
-    return `${
-      env.CLIENT_BASE_URL
-    }/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    return `${env.CLIENT_BASE_URL
+      }/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
   }
   async getRefreshToken(rawToken: string) {
     const hashedToken = await this.tokenService.hashRandomBytes(rawToken);
@@ -89,7 +88,7 @@ export default class AuthService {
     let deviceId: string;
     if (currDeviceId) {
       deviceId = currDeviceId;
-      await this.activeTokenRepo.deleteOne({ deviceId });
+      await this.activeTokenRepo.deleteMany({ deviceId });
     } else {
       deviceId = v4();
     }
@@ -117,9 +116,11 @@ export default class AuthService {
     const result = await this.activeTokenRepo.findOne({ jti });
     return !result;
   }
+
   async blackListToken(deviceId: string) {
-    await this.activeTokenRepo.deleteOne({ deviceId });
+    await this.activeTokenRepo.deleteMany({ deviceId });
   }
+
   async getUserFromGithub(github: GitHub, code: string) {
     const tokens = await github.validateAuthorizationCode(code);
     const accessToken = tokens.accessToken();
@@ -128,9 +129,13 @@ export default class AuthService {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+    if (!response.ok) {
+      throw new Error("Failed to fetch user")
+    }
     const user = (await response.json()) as { email: string };
     return user;
   }
+
   async getUserFromGoogle(google: Google, code: string, codeVerifier: string) {
     const tokens = await google.validateAuthorizationCode(code, codeVerifier);
     const accessToken = tokens.accessToken();
@@ -142,6 +147,9 @@ export default class AuthService {
         },
       },
     );
+    if (!response.ok) {
+      throw new Error("Failed to fetch user")
+    }
     const user = (await response.json()) as { name: string; email: string };
     return user;
   }

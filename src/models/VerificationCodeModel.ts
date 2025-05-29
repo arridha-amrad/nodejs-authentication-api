@@ -1,6 +1,6 @@
 import mongoose, { InferSchemaType, Schema } from 'mongoose';
 
-const VerificationCodeSchema = new mongoose.Schema(
+export const VerificationCodeSchema = new mongoose.Schema(
   {
     code: {
       type: String,
@@ -27,7 +27,7 @@ export const VerificationCode = mongoose.model(
   'VerificationCode',
   VerificationCodeSchema,
 );
-export type TTVerificationCode = Omit<
+type TTVerificationCode = Omit<
   InferSchemaType<typeof VerificationCodeSchema>,
   'userId'
 >;
