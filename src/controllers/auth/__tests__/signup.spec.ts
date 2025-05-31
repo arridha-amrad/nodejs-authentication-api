@@ -12,6 +12,12 @@ jest.mock('@/services/UserService', () => ({
   default: jest.fn(() => mockUserService),
 }));
 
+// Mock a valid origin in your tests
+process.env.CLIENT_BASE_URL = 'http://localhost:5000';
+
+// @ts-ignore
+jest.mock('cors', () => () => (req, res, next) => next());
+
 describe('POST /api/v1/auth/signup', () => {
   it('should catch errors passed to next(err)', async () => {
     mockUserService.checkEmailAndUsernameUniqueness.mockRejectedValue(
