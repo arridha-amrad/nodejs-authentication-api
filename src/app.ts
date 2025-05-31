@@ -17,8 +17,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', true);
 
-app.use(`/api/${env.API_VERSION}/auth`, authRoutes);
-app.use(`/api/${env.API_VERSION}/oauth`, oAuthRoutes);
+app.use(`/api/v1/auth`, authRoutes);
+app.use(`/api/v1/oauth`, oAuthRoutes);
 
 // eslint-disable-next-line
 app.use((_err: any, _req: Request, res: Response, _next: NextFunction) => {
