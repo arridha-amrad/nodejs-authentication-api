@@ -31,6 +31,7 @@ describe('POST /api/v1/auth/signup', () => {
       password: 'validPwd12!',
       username: 'valid_username',
     });
+    console.log(response.body);
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({
       errors: {
@@ -45,6 +46,7 @@ describe('POST /api/v1/auth/signup', () => {
       email: 'valid@Email.com',
       password: 'validPwd12!',
     });
+    console.log(response.body);
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({
       errors: {
@@ -59,6 +61,7 @@ describe('POST /api/v1/auth/signup', () => {
       password: 'invalidPwd',
       username: 'valid_username',
     });
+    console.log(response.body);
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({
       errors: {
@@ -77,6 +80,7 @@ describe('POST /api/v1/auth/signup', () => {
       password: 'validPwd12!',
       username: 'valid_username',
     });
+    console.log(response.body);
     expect(mockUserService.addNewUser).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
     expect(response.body).toMatchObject({
@@ -94,6 +98,7 @@ describe('POST /api/v1/auth/signup', () => {
       password: 'validPwd12!',
       username: 'valid_username',
     });
+    console.log(response.body);
     expect(mockUserService.addNewUser).not.toHaveBeenCalled();
     expect(response.status).toBe(403);
     expect(response.body).toMatchObject({
@@ -117,6 +122,7 @@ describe('POST /api/v1/auth/signup', () => {
       password: 'gloryManUnited99!',
       username: 'xxxxxx',
     });
+    console.log(response.body);
     expect(mockEmailService.send).toHaveBeenCalled();
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({
