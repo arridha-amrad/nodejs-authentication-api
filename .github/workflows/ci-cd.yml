@@ -11,11 +11,15 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:latest
+        image: mongo:6.0
         ports:
           - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: example
+          MONGO_INITDB_DATABASE: nodejs_authentication_api_test
         options: >-
-          --health-cmd="mongo --eval 'db.adminCommand(\"ping\")'"
+          --health-cmd="mongosh -u root -p example --eval 'db.adminCommand(\"ping\")'"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -47,11 +51,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Wait for MongoDB to be healthy
+      - name: Wait for MongoDB to be ready
         run: |
           for i in {1..30}; do
-            mongo --eval "db.adminCommand('ping')" && break || sleep 2;
+            nc -z localhost 27017 && echo "MongoDB is up!" && exit 0
+            echo "Waiting for MongoDB..."
+            sleep 2
           done
+          echo "MongoDB failed to start" && exit 1
+
+      - name: Show MongoDB logs
+        if: failure()
+        run: docker logs $(docker ps -q --filter "ancestor=mongo")
 
       - name: Run Lint
         run: npm run lint
