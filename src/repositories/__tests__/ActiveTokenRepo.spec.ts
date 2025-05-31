@@ -9,7 +9,7 @@ let activeTokenRepo: ActiveTokenRepo
 
 describe("Active Token Repository", () => {
   let dummyId: string;
-  let deviceId = v4()
+  const deviceId = v4()
 
   beforeAll(async () => {
     await connectToMongoDb(process.env.DB_URI);

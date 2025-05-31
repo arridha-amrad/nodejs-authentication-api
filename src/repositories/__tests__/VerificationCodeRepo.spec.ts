@@ -7,8 +7,7 @@ let VCModel: Model<TVerificationCode>
 let repo: VerificationCodeRepository
 
 describe("Verification Code Repository", () => {
-  let dummyId: string;
-  let userId = new Types.ObjectId()
+  const userId = new Types.ObjectId()
 
   beforeAll(async () => {
     await connectToMongoDb(process.env.DB_URI);
@@ -24,7 +23,7 @@ describe("Verification Code Repository", () => {
 
   beforeEach(async () => {
     await VCModel.deleteMany({});
-    const newData = await VCModel.create({
+    await VCModel.create({
       code: "12345678",
       userId
     });
@@ -32,7 +31,6 @@ describe("Verification Code Repository", () => {
       code: "09876543",
       userId
     });
-    dummyId = newData.id;
   });
 
   it("should create new record", async () => {

@@ -12,7 +12,8 @@ export default class ActiveTokenRepo {
   async findOne(filter: Partial<TActiveToken>) {
     return ActiveToken.findOne(filter);
   }
-  async deleteMany(filter: Partial<TActiveToken>) {
-    return ActiveToken.deleteMany({ ...filter });
+
+  async deleteMany(filter: Partial<TActiveToken>): Promise<void> {
+    await ActiveToken.deleteMany({ ...filter });
   }
 }

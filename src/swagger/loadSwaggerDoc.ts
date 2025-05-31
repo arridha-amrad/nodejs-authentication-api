@@ -1,7 +1,6 @@
 import { Express } from 'express';
 
 export const loadSwaggerDocs = async (app: Express) => {
-  if (process.env.NODE_ENV !== 'development') return;
 
   const swaggerUi = await import('swagger-ui-express');
   const swaggerSpec = await import('./index'); // adjust path if needed

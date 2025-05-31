@@ -4,7 +4,9 @@ import { connectToMongoDb } from './database/db.mongo';
 import { loadSwaggerDocs } from './swagger/loadSwaggerDoc';
 
 export const runServer = async () => {
-  await loadSwaggerDocs(app);
+  if (process.env.NODE_ENV === 'development') {
+    await loadSwaggerDocs(app);
+  };
   app.listen(env.PORT, () => {
     console.log('Server is running');
   });
