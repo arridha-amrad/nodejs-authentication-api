@@ -15,9 +15,9 @@ jobs:
         ports:
           - 27017:27017
         env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: example
-          MONGO_INITDB_DATABASE: nodejs_authentication_api_test
+          MONGO_INITDB_ROOT_USERNAME: ${{secrets.MONGO_INITDB_ROOT_USERNAME}}
+          MONGO_INITDB_ROOT_PASSWORD: ${{secrets.MONGO_INITDB_ROOT_PASSWORD}}
+          MONGO_INITDB_DATABASE: ${{secrets.MONGO_INITDB_DATABASE}}
         options: >-
           --health-cmd="mongosh -u root -p example --eval 'db.adminCommand(\"ping\")'"
           --health-interval=10s
@@ -27,6 +27,11 @@ jobs:
     env:
       NODE_ENV: test
       DB_URI: ${{ secrets.DB_URI }}
+      JWT_SECRET: ${{secrets.JWT_SECRET}}
+      CLIENT_BASE_URL: ${{secrets.CLIENT_BASE_URL}}
+      BASE_URL: ${{secrets.BASE_URL}}
+      API_VERSION: ${{secrets.API_VERSION}}
+      PORT: ${{secrets.PORT}}
 
     steps:
       - name: Checkout code

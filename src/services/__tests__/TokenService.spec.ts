@@ -1,9 +1,5 @@
 import { errors } from 'jose';
 import TokenService, { TokenPayload } from '../TokenService';
-import { env } from '@/env';
-
-// Set env var for test
-env.JWT_SECRET = 'supersecretkey';
 
 describe('TokenService', () => {
   const service = new TokenService();
