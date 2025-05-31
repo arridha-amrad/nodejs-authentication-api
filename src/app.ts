@@ -21,8 +21,10 @@ app.use(`/api/v1/auth`, authRoutes);
 app.use(`/api/v1/oauth`, oAuthRoutes);
 
 // eslint-disable-next-line
-app.use((_err: any, _req: Request, res: Response, _next: NextFunction) => {
-  res.status(500).json({ message: 'Internal server error' });
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.log(err);
+  // res.status(500).json({ message: 'Internal server error' });
+  res.status(500).send(err)
   return;
 });
 
